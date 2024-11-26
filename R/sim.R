@@ -1,0 +1,27 @@
+#' Simulated Stream Survival Data
+#'
+#' The dataset containing simulated survival data for 1000 patients arriving in
+#' 10 batches. Each patient may have multiple observations across batches, with
+#' the total number of observations 1500. Covariates of dimension \eqn{5} are
+#' drawn from a multivariate normal distribution with mean zero and covariance
+#' matrix \eqn{\Sigma}, where \eqn{\Sigma_{ij} = \rho^{|i-j|}}
+#' (\eqn{\rho = 0.3}). The hazard function depends on covariates through
+#' \eqn{\bfbeta = (1, \ldots, 1)^{\top}}, with a baseline hazard function
+#' \eqn{\lambda_{0}(t) = t}. The maximum follow-up time is fixed at 3.
+#'
+#' @name sim
+#' @docType data
+#' @format A data frame with 1500 rows and 10 variables:
+#' \describe{
+#'   \item{batch_id}{The index of the batch, ranging from 1 to 10.}
+#'   \item{record_id}{The index of the observation, ranging from 1 to 1500.}
+#'   \item{patient_id}{The index of the patient, ranging from 1 to 1000.}
+#'   \item{time}{The survival time.}
+#'   \item{status}{The event status, 0=censored, 1=event.}
+#'   \item{X1}{Covariate 1.}
+#'   \item{X2}{Covariate 2.}
+#'   \item{X3}{Covariate 3.}
+#'   \item{X4}{Covariate 4.}
+#'   \item{X5}{Covariate 5.}
+#' }
+NULL

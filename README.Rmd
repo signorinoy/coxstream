@@ -1,0 +1,52 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# coxstream
+
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN status](https://www.r-pkg.org/badges/version/coxstream)](https://CRAN.R-project.org/package=coxstream)
+[![R-CMD-check](https://github.com/SignorinoY/coxstream/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/SignorinoY/coxstream/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/SignorinoY/coxstream/graph/badge.svg)](https://app.codecov.io/gh/SignorinoY/coxstream)
+<!-- badges: end -->
+
+The goal of coxstream is to ...
+
+## Installation
+
+You can install the development version of coxstream like so:
+
+``` r
+# install.packages("pak")
+pak::pak("SignorinoY/CoxStream")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(coxstream)
+## basic example code
+formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
+fit <- coxstream(
+  formula, sim[sim$batch_id == 1, ],
+  degree = 4, boundary = c(0, 3), idx_col = "patient_id"
+)
+for (batch in 2:10) {
+  fit <- update(fit, sim[sim$batch_id == batch, ])
+}
+summary(fit)
+```
