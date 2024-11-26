@@ -65,9 +65,8 @@
 <p>This is a basic example which shows you how to solve a common problem:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/SignorinoY/coxstream" class="external-link">coxstream</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: survival</span></span>
 <span><span class="co">## basic example code</span></span>
-<span><span class="va">formula</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span> <span class="op">+</span> <span class="va">X3</span> <span class="op">+</span> <span class="va">X4</span> <span class="op">+</span> <span class="va">X5</span></span>
+<span><span class="va">formula</span> <span class="op">&lt;-</span> <span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span> <span class="op">+</span> <span class="va">X3</span> <span class="op">+</span> <span class="va">X4</span> <span class="op">+</span> <span class="va">X5</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/coxstream.html">coxstream</a></span><span class="op">(</span></span>
 <span>  <span class="va">formula</span>, <span class="va">sim</span><span class="op">[</span><span class="va">sim</span><span class="op">$</span><span class="va">batch_id</span> <span class="op">==</span> <span class="fl">1</span>, <span class="op">]</span>,</span>
 <span>  degree <span class="op">=</span> <span class="fl">4</span>, boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span>, idx_col <span class="op">=</span> <span class="st">"patient_id"</span></span>
@@ -94,6 +93,25 @@
 <span><span class="co">#&gt; X3 2.6956    0.3710     2.4264    2.9946   </span></span>
 <span><span class="co">#&gt; X4 2.4170    0.4137     2.1826    2.6766   </span></span>
 <span><span class="co">#&gt; X5 2.7681    0.3613     2.5052    3.0587</span></span></code></pre></div>
+<p>Besides the estimated coefficients, we can also obtain the estimated baseline hazard function. The following code plots the estimated baseline hazard function and the true baseline hazard function.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">basehaz_pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/basehaz.html">basehaz</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="va">basehaz_true</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>, <span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
+<span>  <span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>, <span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"l"</span>, lty <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">4</span><span class="op">]</span>, <span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">5</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>  xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"Baseline Hazard"</span>,</span>
+<span>  main <span class="op">=</span> <span class="st">"Baseline Hazard (Estimate vs True)"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/polygon.html" class="external-link">polygon</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">4</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">5</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/rgb.html" class="external-link">rgb</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.4</span><span class="op">)</span>, border <span class="op">=</span> <span class="cn">NA</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">basehaz_true</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>, <span class="va">basehaz_true</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"topleft"</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Estimated"</span>, <span class="st">"True"</span><span class="op">)</span>, lty <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-evaluation-1.png" alt="Baseline Hazard (Estimate vs True)" width="100%"></p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -131,7 +149,7 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Ziyang Gong <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/YOUR-ORCID-ID" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li>Ziyang Gong <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0009-0001-4870-9102" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
 </ul>
 </div>
 
