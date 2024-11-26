@@ -17,7 +17,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Ziyang Gong \email{gongziyang@smail.swufe.edu.cn} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Ziyang Gong \email{gongziyang@smail.swufe.edu.cn} (\href{https://orcid.org/0009-0001-4870-9102}{ORCID})
 
 }
 \keyword{internal}

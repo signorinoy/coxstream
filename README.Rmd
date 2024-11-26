@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# coxstream
+# CoxStream
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
@@ -30,7 +30,7 @@ You can install the development version of coxstream like so:
 
 ``` r
 # install.packages("pak")
-pak::pak("SignorinoY/CoxStream")
+pak::pak("SignorinoY/coxstream")
 ```
 
 ## Example
@@ -40,7 +40,7 @@ This is a basic example which shows you how to solve a common problem:
 ```{r example}
 library(coxstream)
 ## basic example code
-formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
+formula <- survival::Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 fit <- coxstream(
   formula, sim[sim$batch_id == 1, ],
   degree = 4, boundary = c(0, 3), idx_col = "patient_id"
@@ -49,4 +49,23 @@ for (batch in 2:10) {
   fit <- update(fit, sim[sim$batch_id == batch, ])
 }
 summary(fit)
+```
+Besides the estimated coefficients, we can also obtain the estimated baseline hazard function. The following code plots the estimated baseline hazard function and the true baseline hazard function.
+```{r evaluation, fig.alt = "Baseline Hazard (Estimate vs True)"}
+time <- seq(0, 3, length.out = 100)
+basehaz_pred <- basehaz(fit, time)
+basehaz_true <- cbind(time, time)
+plot(
+  time, basehaz_pred[, 2],
+  type = "l", lty = 2,
+  ylim = range(basehaz_pred[, 4], basehaz_pred[, 5]),
+  xlab = "Time", ylab = "Baseline Hazard",
+  main = "Baseline Hazard (Estimate vs True)"
+)
+polygon(
+  c(time, rev(time)), c(basehaz_pred[, 4], rev(basehaz_pred[, 5])),
+  col = rgb(0.5, 0.5, 0.5, 0.4), border = NA
+)
+lines(basehaz_true[, 1], basehaz_true[, 2])
+legend("topleft", legend = c("Estimated", "True"), lty = c(2, 1))
 ```

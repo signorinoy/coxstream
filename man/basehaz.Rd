@@ -2,29 +2,18 @@
 % Please edit documentation in R/basehaz.R
 \name{basehaz}
 \alias{basehaz}
-\title{Baseline Hazard Function}
+\title{Generic function for basehaz}
 \usage{
-basehaz(t, y, parms)
+basehaz(object, ...)
 }
 \arguments{
-\item{t}{A non-negative real number specifying the time point at which to
-evaluate the baseline hazard function.}
+\item{object}{Any object.}
 
-\item{y}{The initial (state) values of the ODE system, which are not used in
-Cox proportional hazards models.}
-
-\item{parms}{A list of parameters containing the following components:
-\describe{
-\item{alpha}{The coefficients of the Bernstein polynomial.}
-\item{degree}{A non-negative integer specifying the degree of the
-Bernstein polynomial.}
-\item{boundary}{Boundary knots at which to anchor the Bernstein
-polynomial.}
-}}
+\item{...}{Additional arguments.}
 }
 \value{
-The baseline hazard function evaluated at the specified time point.
+A numeric vector of baseline hazard.
 }
 \description{
-Baseline Hazard Function
+Generic function for basehaz
 }

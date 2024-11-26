@@ -28,10 +28,10 @@ An object of class \code{coxstream}.
 }
 \examples{
 library(coxstream)
-formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
+formula <- survival::Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 fit <- coxstream(
   formula, sim[sim$batch_id == 1, ],
-  degree = 6, boundary = c(0, 3), idx_col = "patient_id"
+  degree = 4, boundary = c(0, 3), idx_col = "patient_id"
 )
 for (batch in 2:10) {
   fit <- update(fit, sim[sim$batch_id == batch, ])

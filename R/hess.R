@@ -11,7 +11,7 @@ hess <- function(
 
   u <- unique(time)
   cbh_pre <- as.matrix(deSolve::ode(
-    y = 0, times = c(0, u), func = basehaz, parms = parms, method = "ode45"
+    y = 0, times = c(0, u), func = basehaz_ode, parms = parms, method = "ode45"
   ))[-1, -1, drop = FALSE]
   cbh <- cbh_pre[match(time, u), , drop = FALSE]
   dcbh_pre <- as.matrix(deSolve::ode(
@@ -36,7 +36,7 @@ hess <- function(
   if (length(time_int) > 0) {
     u_int <- unique(time_int)
     cbh_int_pre <- as.matrix(deSolve::ode(
-      y = 0, times = c(0, u_int), func = basehaz, parms = parms,
+      y = 0, times = c(0, u_int), func = basehaz_ode, parms = parms,
       method = "ode45"
     ))[-1, -1, drop = FALSE]
     cbh_int <- cbh_int_pre[match(time_int, u_int), , drop = FALSE]

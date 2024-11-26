@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# coxstream
+# CoxStream
 
 <!-- badges: start -->
 
@@ -22,7 +22,7 @@ You can install the development version of coxstream like so:
 
 ``` r
 # install.packages("pak")
-pak::pak("SignorinoY/CoxStream")
+pak::pak("SignorinoY/coxstream")
 ```
 
 ## Example
@@ -31,9 +31,8 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(coxstream)
-#> Loading required package: survival
 ## basic example code
-formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
+formula <- survival::Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 fit <- coxstream(
   formula, sim[sim$batch_id == 1, ],
   degree = 4, boundary = c(0, 3), idx_col = "patient_id"
@@ -61,3 +60,28 @@ summary(fit)
 #> X4 2.4170    0.4137     2.1826    2.6766   
 #> X5 2.7681    0.3613     2.5052    3.0587
 ```
+
+Besides the estimated coefficients, we can also obtain the estimated
+baseline hazard function. The following code plots the estimated
+baseline hazard function and the true baseline hazard function.
+
+``` r
+time <- seq(0, 3, length.out = 100)
+basehaz_pred <- basehaz(fit, time)
+basehaz_true <- cbind(time, time)
+plot(
+  time, basehaz_pred[, 2],
+  type = "l", lty = 2,
+  ylim = range(basehaz_pred[, 4], basehaz_pred[, 5]),
+  xlab = "Time", ylab = "Baseline Hazard",
+  main = "Baseline Hazard (Estimate vs True)"
+)
+polygon(
+  c(time, rev(time)), c(basehaz_pred[, 4], rev(basehaz_pred[, 5])),
+  col = rgb(0.5, 0.5, 0.5, 0.4), border = NA
+)
+lines(basehaz_true[, 1], basehaz_true[, 2])
+legend("topleft", legend = c("Estimated", "True"), lty = c(2, 1))
+```
+
+<img src="man/figures/README-evaluation-1.png" alt="Baseline Hazard (Estimate vs True)" width="100%" />

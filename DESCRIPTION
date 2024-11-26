@@ -3,19 +3,20 @@ Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
     person("Ziyang", "Gong", , "gongziyang@smail.swufe.edu.cn", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = "0009-0001-4870-9102"))
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 URL: https://github.com/SignorinoY/coxstream,
     http://gongziyang.com/coxstream/
 BugReports: https://github.com/SignorinoY/coxstream/issues
 Depends: 
-    R (>= 4.0),
-    survival
+    R (>= 4.0)
 Imports: 
     deSolve,
+    lifecycle,
     splines2,
-    stats
+    stats,
+    survival
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
