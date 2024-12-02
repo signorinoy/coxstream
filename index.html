@@ -69,7 +69,7 @@
 <span><span class="va">formula</span> <span class="op">&lt;-</span> <span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span> <span class="op">+</span> <span class="va">X3</span> <span class="op">+</span> <span class="va">X4</span> <span class="op">+</span> <span class="va">X5</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/coxstream.html">coxstream</a></span><span class="op">(</span></span>
 <span>  <span class="va">formula</span>, <span class="va">sim</span><span class="op">[</span><span class="va">sim</span><span class="op">$</span><span class="va">batch_id</span> <span class="op">==</span> <span class="fl">1</span>, <span class="op">]</span>,</span>
-<span>  degree <span class="op">=</span> <span class="fl">4</span>, boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span>, idx_col <span class="op">=</span> <span class="st">"patient_id"</span></span>
+<span>  degree <span class="op">=</span> <span class="fl">3</span>, boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span>, idx_col <span class="op">=</span> <span class="st">"patient_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">batch</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">sim</span><span class="op">[</span><span class="va">sim</span><span class="op">$</span><span class="va">batch_id</span> <span class="op">==</span> <span class="va">batch</span>, <span class="op">]</span><span class="op">)</span></span>
@@ -77,41 +77,41 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; coxstream(formula = formula, data = sim[sim$batch_id == 1, ], </span></span>
-<span><span class="co">#&gt;     degree = 4, boundary = c(0, 3), idx_col = "patient_id")</span></span>
+<span><span class="co">#&gt;     degree = 3, boundary = c(0, 3), idx_col = "patient_id")</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;       coef exp(coef)      se     z      p    </span></span>
-<span><span class="co">#&gt; X1 0.96860   2.63426 0.05107 18.97 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X2 0.99686   2.70976 0.05355 18.61 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X3 0.99161   2.69557 0.05368 18.47 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X4 0.88254   2.41704 0.05205 16.96 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X5 1.01817   2.76811 0.05092 19.99 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt;         coef exp(coef)      se     z      p    </span></span>
+<span><span class="co">#&gt; [1,] 0.96583   2.62696 0.05042 19.16 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; [2,] 0.99377   2.70140 0.05315 18.70 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; [3,] 0.99015   2.69163 0.05395 18.35 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; [4,] 0.88581   2.42494 0.05206 17.02 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; [5,] 1.01700   2.76489 0.05037 20.19 &lt;2e-16 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span><span class="co">#&gt;    exp(coef) exp(-coef) lower .95 upper .95</span></span>
-<span><span class="co">#&gt; X1 2.6343    0.3796     2.3833    2.9116   </span></span>
-<span><span class="co">#&gt; X2 2.7098    0.3690     2.4398    3.0096   </span></span>
-<span><span class="co">#&gt; X3 2.6956    0.3710     2.4264    2.9946   </span></span>
-<span><span class="co">#&gt; X4 2.4170    0.4137     2.1826    2.6766   </span></span>
-<span><span class="co">#&gt; X5 2.7681    0.3613     2.5052    3.0587</span></span></code></pre></div>
-<p>Besides the estimated coefficients, we can also obtain the estimated baseline hazard function. The following code plots the estimated baseline hazard function and the true baseline hazard function.</p>
+<span><span class="co">#&gt;      exp(coef) exp(-coef) lower .95 upper .95</span></span>
+<span><span class="co">#&gt; [1,] 2.6270    0.3807     2.3798    2.8998   </span></span>
+<span><span class="co">#&gt; [2,] 2.7014    0.3702     2.4341    2.9980   </span></span>
+<span><span class="co">#&gt; [3,] 2.6916    0.3715     2.4215    2.9918   </span></span>
+<span><span class="co">#&gt; [4,] 2.4249    0.4124     2.1897    2.6854   </span></span>
+<span><span class="co">#&gt; [5,] 2.7649    0.3617     2.5050    3.0518</span></span></code></pre></div>
+<p>Besides the estimated coefficients, we can also obtain the estimated baseline hazard function. The following code plots the estimated cumulative baseline hazard function and the true cumulative baseline hazard function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span>, length.out <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
 <span><span class="va">basehaz_pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/basehaz.html">basehaz</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">time</span><span class="op">)</span></span>
-<span><span class="va">basehaz_true</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">time</span><span class="op">)</span></span>
+<span><span class="va">basehaz_true</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">time</span>, <span class="fl">0.5</span> <span class="op">*</span> <span class="va">time</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">time</span>, <span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span>,</span>
 <span>  type <span class="op">=</span> <span class="st">"l"</span>, lty <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">4</span><span class="op">]</span>, <span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">5</span><span class="op">]</span><span class="op">)</span>,</span>
-<span>  xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"Baseline Hazard"</span>,</span>
-<span>  main <span class="op">=</span> <span class="st">"Baseline Hazard (Estimate vs True)"</span></span>
+<span>  xlab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">t</span><span class="op">)</span>, ylab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">Lambda</span><span class="op">[</span><span class="fl">0</span><span class="op">]</span><span class="op">(</span><span class="va">t</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  main <span class="op">=</span> <span class="st">"Cumulative Baseline Hazard (Estimate vs True)"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/polygon.html" class="external-link">polygon</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">time</span>, <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">time</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">4</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">basehaz_pred</span><span class="op">[</span>, <span class="fl">5</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/rgb.html" class="external-link">rgb</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.4</span><span class="op">)</span>, border <span class="op">=</span> <span class="cn">NA</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">basehaz_true</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>, <span class="va">basehaz_true</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"topleft"</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Estimated"</span>, <span class="st">"True"</span><span class="op">)</span>, lty <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-evaluation-1.png" alt="Baseline Hazard (Estimate vs True)" width="100%"></p>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"topleft"</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Estimate"</span>, <span class="st">"True"</span><span class="op">)</span>, lty <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-evaluation-1.png" alt="Cumulative Baseline Hazard (Estimate vs True)" width="100%"></p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
