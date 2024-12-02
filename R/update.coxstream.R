@@ -6,7 +6,7 @@
 #' @param degree An integer representing the degree of the Bernstein polynomial,
 #' or a string specifying the degree of the Bernstein polynomial as a function
 #' of the number of patients, "auto", which is calculated as
-#' \eqn{\lceil N^{1/5} \rceil}, where \eqn{N} is the unique number of the
+#' \eqn{\lceil N^{1/5} \rceil}, where \eqn{N} is the number of the unique
 #' survival times.
 #' @param ... Additional arguments (not used).
 #'
@@ -29,7 +29,7 @@ update.coxstream <- function(object, data, degree = "auto", ...) {
   n_features <- length(object$theta_prev) - object$degree - 1
 
   if (degree == "auto") {
-    degree <- max(object$degree, ceiling(length(time_unique)^0.2))
+    degree <- max(object$degree, floor(length(time_unique)^0.2 + 4))
   } else if (is.numeric(degree)) {
     degree <- as.integer(degree)
   } else {
