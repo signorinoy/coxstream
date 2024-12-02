@@ -28,7 +28,7 @@ The goal of coxstream is to ...
 
 You can install the development version of coxstream like so:
 
-``` r
+``` {r, eval = FALSE}
 # install.packages("pak")
 pak::pak("SignorinoY/coxstream")
 ```
@@ -43,29 +43,29 @@ library(coxstream)
 formula <- survival::Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 fit <- coxstream(
   formula, sim[sim$batch_id == 1, ],
-  degree = 4, boundary = c(0, 3), idx_col = "patient_id"
+  degree = 3, boundary = c(0, 3), idx_col = "patient_id"
 )
 for (batch in 2:10) {
   fit <- update(fit, sim[sim$batch_id == batch, ])
 }
 summary(fit)
 ```
-Besides the estimated coefficients, we can also obtain the estimated baseline hazard function. The following code plots the estimated baseline hazard function and the true baseline hazard function.
-```{r evaluation, fig.alt = "Baseline Hazard (Estimate vs True)"}
+Besides the estimated coefficients, we can also obtain the estimated baseline hazard function. The following code plots the estimated cumulative baseline hazard function and the true cumulative baseline hazard function.
+```{r evaluation, fig.alt = "Cumulative Baseline Hazard (Estimate vs True)"}
 time <- seq(0, 3, length.out = 100)
 basehaz_pred <- basehaz(fit, time)
-basehaz_true <- cbind(time, time)
+basehaz_true <- cbind(time, 0.5 * time^2)
 plot(
   time, basehaz_pred[, 2],
   type = "l", lty = 2,
   ylim = range(basehaz_pred[, 4], basehaz_pred[, 5]),
-  xlab = "Time", ylab = "Baseline Hazard",
-  main = "Baseline Hazard (Estimate vs True)"
+  xlab = expression(t), ylab = expression(Lambda[0](t)),
+  main = "Cumulative Baseline Hazard (Estimate vs True)"
 )
 polygon(
   c(time, rev(time)), c(basehaz_pred[, 4], rev(basehaz_pred[, 5])),
   col = rgb(0.5, 0.5, 0.5, 0.4), border = NA
 )
 lines(basehaz_true[, 1], basehaz_true[, 2])
-legend("topleft", legend = c("Estimated", "True"), lty = c(2, 1))
+legend("topleft", legend = c("Estimate", "True"), lty = c(2, 1))
 ```

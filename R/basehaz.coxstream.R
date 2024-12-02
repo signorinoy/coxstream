@@ -1,4 +1,4 @@
-#' Predict the baseline hazard function for \code{coxstream} objects
+#' Predict the cumulative baseline hazard function for \code{coxstream} objects
 #'
 #' @param object An object of class \code{coxstream}.
 #' @param newdata A numeric vector of time points at which to predict the
@@ -10,7 +10,8 @@
 #' @param ... Additional arguments (not unused).
 #'
 #' @return A matrix with one row for each time point, and columns containing
-#' the baseline hazard function, standard error, and confidence interval.
+#' the cumulative baseline hazard function, standard error, and confidence
+#' interval.
 #' @export
 basehaz.coxstream <- function(
     object, newdata = NULL, conf.int = 0.95, ...) {
@@ -28,20 +29,25 @@ basehaz.coxstream <- function(
   }
   q <- degree + 1
   alpha <- object$theta_prev[1:q]
+  parms <- list(alpha = alpha, degree = degree, boundary = boundary)
+
   u <- unique(time)
   b_pre <- splines2::bpoly(u, degree, TRUE, boundary)
   b <- b_pre[match(time, u), ]
-  basehaz <- exp(b %*% alpha)
+  cbh_pre <- as.matrix(deSolve::ode(
+    y = 0, times = c(0, u), func = basehaz_ode, parms = parms, method = "ode45"
+  ))[-1, -1, drop = FALSE]
+  cbh <- cbh_pre[match(time, u), , drop = FALSE]
 
   vcov_alpha <- vcov(object)[1:q, 1:q]
   vcov_lp <- b %*% vcov_alpha %*% t(b)
-  vcov_basehaz <- diag(as.vector(basehaz^2)) %*% vcov_lp
+  vcov_basehaz <- diag(as.vector(cbh^2)) %*% vcov_lp
   se_basehaz <- sqrt(diag(vcov_basehaz))
   z <- stats::qnorm((1 + conf.int) / 2)
 
   basehaz_matrix <- cbind(
-    time, basehaz, se_basehaz,
-    basehaz - z * se_basehaz, basehaz + z * se_basehaz
+    time, cbh, se_basehaz,
+    cbh - z * se_basehaz, cbh + z * se_basehaz
   )
   dimnames(basehaz_matrix) <- list(
     NULL, c(

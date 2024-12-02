@@ -15,8 +15,8 @@ level for the confidence interval. Default is 0.95.}
 \item{...}{Additional arguments (not unused).}
 }
 \value{
-An object of class \code{"summary.coxstream"}, containing the following
-components:
+An object of class \code{"summary.coxstream"}, containing the
+following components:
 \describe{
 \item{call}{The matched call.}
 \item{coefficients}{A matrix with one row for each coefficient, and

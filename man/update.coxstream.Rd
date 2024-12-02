@@ -4,12 +4,18 @@
 \alias{update.coxstream}
 \title{Update the \code{coxstream} with new data.}
 \usage{
-\method{update}{coxstream}(object, data, ...)
+\method{update}{coxstream}(object, data, degree = "auto", ...)
 }
 \arguments{
 \item{object}{A \code{coxstream} object.}
 
 \item{data}{A data frame containing the variables in the model.}
+
+\item{degree}{An integer representing the degree of the Bernstein polynomial,
+or a string specifying the degree of the Bernstein polynomial as a function
+of the number of patients, "auto", which is calculated as
+\eqn{\lceil N^{1/5} \rceil}, where \eqn{N} is the unique number of the
+survival times.}
 
 \item{...}{Additional arguments (not used).}
 }

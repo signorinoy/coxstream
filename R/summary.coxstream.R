@@ -5,8 +5,8 @@
 #' level for the confidence interval. Default is 0.95.
 #' @param ... Additional arguments (not unused).
 #'
-#' @return An object of class \code{"summary.coxstream"}, containing the following
-#' components:
+#' @return An object of class \code{"summary.coxstream"}, containing the
+#' following components:
 #' \describe{
 #'   \item{call}{The matched call.}
 #'   \item{coefficients}{A matrix with one row for each coefficient, and

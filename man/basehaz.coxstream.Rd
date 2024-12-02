@@ -2,7 +2,7 @@
 % Please edit documentation in R/basehaz.coxstream.R
 \name{basehaz.coxstream}
 \alias{basehaz.coxstream}
-\title{Predict the baseline hazard function for \code{coxstream} objects}
+\title{Predict the cumulative baseline hazard function for \code{coxstream} objects}
 \usage{
 \method{basehaz}{coxstream}(object, newdata = NULL, conf.int = 0.95, ...)
 }
@@ -21,8 +21,9 @@ level for the confidence interval. Default is 0.95.}
 }
 \value{
 A matrix with one row for each time point, and columns containing
-the baseline hazard function, standard error, and confidence interval.
+the cumulative baseline hazard function, standard error, and confidence
+interval.
 }
 \description{
-Predict the baseline hazard function for \code{coxstream} objects
+Predict the cumulative baseline hazard function for \code{coxstream} objects
 }

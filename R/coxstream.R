@@ -35,7 +35,7 @@ coxstream <- function(formula, data, degree, boundary, idx_col) {
 
   # Store the survival times for each patient
   time_stored <- sort(time[delta == 0])
-  n_passes <- length(time_stored)
+  time_unique <- unique(time)
 
   sorted <- order(time)
   x <- x[sorted, ]
@@ -70,7 +70,7 @@ coxstream <- function(formula, data, degree, boundary, idx_col) {
     theta_prev = coef,
     hess_prev = hess,
     time_stored = time_stored,
-    n_passes = n_passes,
+    time_unique = time_unique,
     formula = formula,
     idx_col = idx_col,
     call = match.call()
