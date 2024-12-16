@@ -75,7 +75,7 @@ update.coxstream <- function(object, data, degree = "auto", ...) {
   hess_prev <- object$hess_prev
 
   sr <- stats::optim(
-    par = theta_prev, fn = fn, gr = gr, method = "BFGS",
+    par = theta_prev, fn = fn, gr = gr, method = "CG",
     x = x, time = time, delta = delta, degree = object$degree,
     boundary = object$boundary, theta_prev = theta_prev, hess_prev = hess_prev,
     time_int = time_int, control = list(trace = verbose)

@@ -47,12 +47,12 @@ coxstream <- function(
 
   p <- ncol(x)
   q <- degree + 1
-  theta_prev <- stats::rnorm(p + q)
+  theta_prev <- numeric(p + q)
   hess_prev <- matrix(0, p + q, p + q)
   time_int <- c()
 
   res <- stats::optim(
-    par = theta_prev, fn = fn, gr = gr, method = "BFGS",
+    par = theta_prev, fn = fn, gr = gr, method = "CG",
     x = x, time = time, delta = delta, degree = degree, boundary = boundary,
     theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int,
     control = list(trace = verbose)
