@@ -15,7 +15,7 @@
 update.coxstream <- function(object, data, degree = "auto", ...) {
   idx_col <- object$idx_col
   formula <- object$formula
-  verbose <- object$verbose
+  boundary <- object$boundary
   time_stored <- object$time_stored
 
   mf <- stats::model.frame(formula, data)
@@ -74,20 +74,13 @@ update.coxstream <- function(object, data, degree = "auto", ...) {
   theta_prev <- object$theta_prev
   hess_prev <- object$hess_prev
 
-  sr <- stats::optim(
-    par = theta_prev, fn = fn, gr = gr, method = "CG",
-    x = x, time = time, delta = delta, degree = object$degree,
-    boundary = object$boundary, theta_prev = theta_prev, hess_prev = hess_prev,
-    time_int = time_int, control = list(trace = verbose)
+  res <- stats::nlm(
+    f = objective, p = theta_prev, hessian = TRUE,
+    x = x, time = time, delta = delta, degree = degree, boundary = boundary,
+    theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int
   )
-
-  object$theta_prev <- sr$par
-  object$hess_prev <- hess(
-    sr$par,
-    x = x, time = time, delta = delta, degree = object$degree,
-    boundary = object$boundary, theta_prev = theta_prev, hess_prev = hess_prev,
-    time_int = time_int
-  )
+  object$theta_prev  <- res$estimate
+  object$hess_prev <- res$hessian
 
   coef_names <- c(paste0("Basis ", 1:(object$degree + 1)), colnames(x))
   names(object$theta_prev) <- coef_names
