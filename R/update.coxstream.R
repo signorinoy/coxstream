@@ -15,6 +15,7 @@
 update.coxstream <- function(object, data, degree = "auto", ...) {
   idx_col <- object$idx_col
   formula <- object$formula
+  verbose <- object$verbose
   time_stored <- object$time_stored
 
   mf <- stats::model.frame(formula, data)
@@ -29,7 +30,7 @@ update.coxstream <- function(object, data, degree = "auto", ...) {
   n_features <- length(object$theta_prev) - object$degree - 1
 
   if (degree == "auto") {
-    degree <- max(object$degree, floor(length(time_unique)^0.2 + 4))
+    degree <- max(object$degree, max(floor(2 * length(time_unique)^0.2), 3))
   } else if (is.numeric(degree)) {
     degree <- as.integer(degree)
   } else {
@@ -77,7 +78,7 @@ update.coxstream <- function(object, data, degree = "auto", ...) {
     par = theta_prev, fn = fn, gr = gr, method = "BFGS",
     x = x, time = time, delta = delta, degree = object$degree,
     boundary = object$boundary, theta_prev = theta_prev, hess_prev = hess_prev,
-    time_int = time_int
+    time_int = time_int, control = list(trace = verbose)
   )
 
   object$theta_prev <- sr$par

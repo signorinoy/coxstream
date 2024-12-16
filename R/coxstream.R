@@ -9,6 +9,8 @@
 #' @param boundary A vector of length 2 containing the boundary knots.
 #' @param idx_col The column name of the index column, which is used to
 #' distinguish different patients.
+#' @param verbose A logical value indicating whether to print the optimization
+#' process. Default is \code{FALSE}.
 #'
 #' @return An object of class \code{coxstream}.
 #' @export
@@ -18,13 +20,14 @@
 #' formula <- survival::Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 #' fit <- coxstream(
 #'   formula, sim[sim$batch_id == 1, ],
-#'   degree = 4, boundary = c(0, 3), idx_col = "patient_id"
+#'   degree = 3, boundary = c(0, 3), idx_col = "patient_id"
 #' )
 #' for (batch in 2:10) {
 #'   fit <- update(fit, sim[sim$batch_id == batch, ])
 #' }
 #' summary(fit)
-coxstream <- function(formula, data, degree, boundary, idx_col) {
+coxstream <- function(
+  formula, data, degree, boundary, idx_col, verbose = FALSE) {
   mf <- stats::model.frame(formula, data)
   y <- stats::model.response(mf)
   time <- y[, 1]
@@ -44,14 +47,15 @@ coxstream <- function(formula, data, degree, boundary, idx_col) {
 
   p <- ncol(x)
   q <- degree + 1
-  theta_prev <- numeric(p + q)
+  theta_prev <- stats::rnorm(p + q)
   hess_prev <- matrix(0, p + q, p + q)
   time_int <- c()
 
   res <- stats::optim(
     par = theta_prev, fn = fn, gr = gr, method = "BFGS",
     x = x, time = time, delta = delta, degree = degree, boundary = boundary,
-    theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int
+    theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int,
+    control = list(trace = verbose)
   )
   coef <- res$par
   hess <- hess(
@@ -73,6 +77,7 @@ coxstream <- function(formula, data, degree, boundary, idx_col) {
     time_unique = time_unique,
     formula = formula,
     idx_col = idx_col,
+    verbose = verbose,
     call = match.call()
   )
   class(fit) <- "coxstream"

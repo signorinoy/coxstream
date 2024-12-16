@@ -4,7 +4,7 @@
 \alias{coxstream}
 \title{Streaming Cox model with repeated observations}
 \usage{
-coxstream(formula, data, degree, boundary, idx_col)
+coxstream(formula, data, degree, boundary, idx_col, verbose = FALSE)
 }
 \arguments{
 \item{formula}{A formula expression as for regression models, of the form
@@ -19,6 +19,9 @@ returned by the \code{\link{Surv}} function.}
 
 \item{idx_col}{The column name of the index column, which is used to
 distinguish different patients.}
+
+\item{verbose}{A logical value indicating whether to print the optimization
+process. Default is \code{FALSE}.}
 }
 \value{
 An object of class \code{coxstream}.
@@ -31,7 +34,7 @@ library(coxstream)
 formula <- survival::Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 fit <- coxstream(
   formula, sim[sim$batch_id == 1, ],
-  degree = 4, boundary = c(0, 3), idx_col = "patient_id"
+  degree = 3, boundary = c(0, 3), idx_col = "patient_id"
 )
 for (batch in 2:10) {
   fit <- update(fit, sim[sim$batch_id == batch, ])
