@@ -2,7 +2,7 @@ pandoc: 3.1.11
 pkgdown: 2.1.1
 pkgdown_sha: ~
 articles: {}
-last_built: 2024-12-04T17:29Z
+last_built: 2024-12-16T19:44Z
 urls:
   reference: http://gongziyang.com/coxstream/reference
   article: http://gongziyang.com/coxstream/articles
