@@ -13,9 +13,10 @@
 #' @return An object of class \code{coxstream}.
 #' @export
 update.coxstream <- function(object, data, degree = "auto", ...) {
-  idx_col <- object$idx_col
   formula <- object$formula
   boundary <- object$boundary
+  idx_col <- object$idx_col
+  verbose <- object$verbose
   time_stored <- object$time_stored
 
   mf <- stats::model.frame(formula, data)
@@ -78,8 +79,12 @@ update.coxstream <- function(object, data, degree = "auto", ...) {
   res <- stats::nlm(
     f = objective, p = theta_prev, hessian = TRUE,
     x = x, time = time, delta = delta, degree = degree, boundary = boundary,
-    theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int
+    theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int,
+    print.level = ifelse(verbose, 2, 0)
   )
+  if (res$code > 3) {
+    stop("The optimization did not converge.")
+  }
   object$theta_prev <- res$estimate
   object$hess_prev <- res$hessian
 

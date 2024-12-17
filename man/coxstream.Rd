@@ -4,7 +4,7 @@
 \alias{coxstream}
 \title{Streaming Cox model with repeated observations}
 \usage{
-coxstream(formula, data, degree, boundary, idx_col)
+coxstream(formula, data, degree, boundary, idx_col, verbose = FALSE)
 }
 \arguments{
 \item{formula}{A formula expression as for regression models, of the form
@@ -19,6 +19,9 @@ returned by the \code{\link{Surv}} function.}
 
 \item{idx_col}{The column name of the index column, which is used to
 distinguish different patients.}
+
+\item{verbose}{A logical indicating whether to print the optimization
+messages. Default is \code{FALSE}.}
 }
 \value{
 An object of class \code{coxstream}.
