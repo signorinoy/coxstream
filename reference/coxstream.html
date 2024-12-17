@@ -38,7 +38,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">coxstream</span><span class="op">(</span><span class="va">formula</span>, <span class="va">data</span>, <span class="va">degree</span>, <span class="va">boundary</span>, <span class="va">idx_col</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">coxstream</span><span class="op">(</span><span class="va">formula</span>, <span class="va">data</span>, <span class="va">degree</span>, <span class="va">boundary</span>, <span class="va">idx_col</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -66,6 +66,11 @@ returned by the <code>Surv</code> function.</p></dd>
 <dt id="arg-idx-col">idx_col<a class="anchor" aria-label="anchor" href="#arg-idx-col"></a></dt>
 <dd><p>The column name of the index column, which is used to
 distinguish different patients.</p></dd>
+
+
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p>A logical indicating whether to print the optimization
+messages. Default is <code>FALSE</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
