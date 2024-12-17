@@ -30,7 +30,8 @@ update.coxstream <- function(object, data, degree = "auto", ...) {
   n_features <- length(object$theta_prev) - object$degree - 1
 
   if (degree == "auto") {
-    degree <- max(object$degree, max(floor(2 * length(time_unique)^0.2), 3))
+    degree <- max(object$degree, floor(2 * length(time_unique)^0.2))
+    degree <- min(degree, object$degree + 1)
   } else if (is.numeric(degree)) {
     degree <- as.integer(degree)
   } else {
@@ -79,7 +80,7 @@ update.coxstream <- function(object, data, degree = "auto", ...) {
     x = x, time = time, delta = delta, degree = degree, boundary = boundary,
     theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int
   )
-  object$theta_prev  <- res$estimate
+  object$theta_prev <- res$estimate
   object$hess_prev <- res$hessian
 
   coef_names <- c(paste0("Basis ", 1:(object$degree + 1)), colnames(x))

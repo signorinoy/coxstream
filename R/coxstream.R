@@ -25,7 +25,7 @@
 #' }
 #' summary(fit)
 coxstream <- function(
-  formula, data, degree, boundary, idx_col) {
+    formula, data, degree, boundary, idx_col) {
   mf <- stats::model.frame(formula, data)
   y <- stats::model.response(mf)
   time <- y[, 1]

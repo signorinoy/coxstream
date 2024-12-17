@@ -60,15 +60,15 @@ objective <- function(
     ))[-1, -1, drop = FALSE]
     d2cbh_int <- d2cbh_int_pre[match(time_int, u_int), , drop = FALSE]
     x_int <- x[names(time_int), , drop = FALSE]
-    eta_int <- eta[names(time_int), ]
+    eta_int <- x_int %*% beta
 
     dalpha <- t(dcbh_int) %*% exp(eta_int)
     dbeta <- t(x_int) %*% (cbh_int * exp(eta_int))
     d2alpha_int <- matrix(colSums(sweep(d2cbh_int, 1, exp(eta_int), "*")), q)
-    d2beta_int <- t(x_int) %*% (as.vector(exp(eta_int) * cbh_int) * x_int)
+    d2beta_int <- t(x_int) %*% (as.vector(cbh_int * exp(eta_int)) * x_int)
     dalph_dabeta_int <- t(dcbh_int) %*% (as.vector(exp(eta_int)) * x_int)
 
-    loss3 <- -sum(cbh_int * exp(eta_int))
+    loss3 <- -t(cbh_int) %*% exp(eta_int)
     grad3 <- -c(dalpha, dbeta)
     hess3 <- -cbind(
       rbind(d2alpha_int, t(dalph_dabeta_int)),
