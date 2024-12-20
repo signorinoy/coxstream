@@ -38,7 +38,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">coxstream</span><span class="op">(</span><span class="va">formula</span>, <span class="va">data</span>, <span class="va">degree</span>, <span class="va">boundary</span>, <span class="va">idx_col</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">coxstream</span><span class="op">(</span><span class="va">formula</span>, <span class="va">data</span>, <span class="va">degree</span>, <span class="va">boundary</span>, <span class="va">idx_col</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -67,11 +67,6 @@ returned by the <code>Surv</code> function.</p></dd>
 <dd><p>The column name of the index column, which is used to
 distinguish different patients.</p></dd>
 
-
-<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>A logical indicating whether to print the optimization
-messages. Default is <code>FALSE</code>.</p></dd>
-
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -95,19 +90,19 @@ messages. Default is <code>FALSE</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     degree = 3, boundary = c(0, 3), idx_col = "patient_id")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       coef exp(coef)      se     z      p    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X1 1.00674   2.73666 0.05126 19.64 &lt;2e-16 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X2 1.03339   2.81058 0.05357 19.29 &lt;2e-16 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X3 1.03011   2.80138 0.05461 18.86 &lt;2e-16 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X4 0.92134   2.51265 0.05184 17.77 &lt;2e-16 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X5 1.04442   2.84174 0.05116 20.41 &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X1 1.00681   2.73685 0.05087 19.79 &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X2 1.03419   2.81284 0.05339 19.37 &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X3 1.03710   2.82101 0.05459 19.00 &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X4 0.92011   2.50958 0.05175 17.78 &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X5 1.04914   2.85519 0.05078 20.66 &lt;2e-16 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    exp(coef) exp(-coef) lower .95 upper .95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X1 2.7367    0.3654     2.4751    3.0259   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X2 2.8106    0.3558     2.5305    3.1217   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X3 2.8014    0.3570     2.5170    3.1179   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X4 2.5127    0.3980     2.2699    2.7814   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X5 2.8417    0.3519     2.5706    3.1415   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X1 2.7368    0.3654     2.4772    3.0238   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X2 2.8128    0.3555     2.5334    3.1231   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X3 2.8210    0.3545     2.5347    3.1396   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X4 2.5096    0.3985     2.2675    2.7775   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X5 2.8552    0.3502     2.5847    3.1540   </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

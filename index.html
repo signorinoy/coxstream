@@ -80,19 +80,19 @@
 <span><span class="co">#&gt;     degree = 1, boundary = c(0, 3), idx_col = "patient_id")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;       coef exp(coef)      se     z      p    </span></span>
-<span><span class="co">#&gt; X1 0.96244   2.61808 0.04949 19.45 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X2 0.98791   2.68562 0.05140 19.22 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X3 0.99161   2.69558 0.05260 18.85 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X4 0.88978   2.43459 0.05029 17.69 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X5 0.99063   2.69292 0.04812 20.59 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X1 0.96391   2.62192 0.04955 19.45 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X2 0.99021   2.69179 0.05142 19.26 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X3 0.99061   2.69288 0.05263 18.82 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X4 0.89065   2.43672 0.05043 17.66 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X5 0.99236   2.69758 0.04814 20.61 &lt;2e-16 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt;    exp(coef) exp(-coef) lower .95 upper .95</span></span>
-<span><span class="co">#&gt; X1 2.6181    0.3820     2.3760    2.8848   </span></span>
-<span><span class="co">#&gt; X2 2.6856    0.3724     2.4283    2.9703   </span></span>
-<span><span class="co">#&gt; X3 2.6956    0.3710     2.4316    2.9883   </span></span>
-<span><span class="co">#&gt; X4 2.4346    0.4107     2.2061    2.6868   </span></span>
-<span><span class="co">#&gt; X5 2.6929    0.3713     2.4506    2.9592</span></span></code></pre></div>
+<span><span class="co">#&gt; X1 2.6219    0.3814     2.3793    2.8893   </span></span>
+<span><span class="co">#&gt; X2 2.6918    0.3715     2.4337    2.9772   </span></span>
+<span><span class="co">#&gt; X3 2.6929    0.3713     2.4289    2.9855   </span></span>
+<span><span class="co">#&gt; X4 2.4367    0.4104     2.2074    2.6898   </span></span>
+<span><span class="co">#&gt; X5 2.6976    0.3707     2.4547    2.9645</span></span></code></pre></div>
 <p>Besides the estimated coefficients, we can also obtain the estimated baseline hazard function. The following code plots the estimated cumulative baseline hazard function and the true cumulative baseline hazard function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span>, length.out <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
