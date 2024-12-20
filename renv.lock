@@ -818,6 +818,17 @@
       ],
       "Hash": "3ec7e3ddcacc2d34a9046941222bf94d"
     },
+    "trust": {
+      "Package": "trust",
+      "Version": "0.1-8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "stats"
+      ],
+      "Hash": "f50614d2145ba1012b62ff75f2129d5b"
+    },
     "utf8": {
       "Package": "utf8",
       "Version": "1.2.4",

@@ -9,8 +9,6 @@
 #' @param boundary A vector of length 2 containing the boundary knots.
 #' @param idx_col The column name of the index column, which is used to
 #' distinguish different patients.
-#' @param verbose A logical indicating whether to print the optimization
-#' messages. Default is \code{FALSE}.
 #'
 #' @return An object of class \code{coxstream}.
 #' @export
@@ -27,7 +25,7 @@
 #' }
 #' summary(fit)
 coxstream <- function(
-    formula, data, degree, boundary, idx_col, verbose = FALSE) {
+    formula, data, degree, boundary, idx_col) {
   mf <- stats::model.frame(formula, data)
   y <- stats::model.response(mf)
   time <- y[, 1]
@@ -51,16 +49,15 @@ coxstream <- function(
   hess_prev <- matrix(0, p + q, p + q)
   time_int <- c()
 
-  res <- stats::nlm(
-    f = objective, p = theta_prev, hessian = TRUE,
+  res <- trust(
+    objfun = objective, parinit = theta_prev, rinit = 1, rmax = 10,
     x = x, time = time, delta = delta, degree = degree, boundary = boundary,
-    theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int,
-    print.level = ifelse(verbose, 2, 0)
+    theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int
   )
-  if (res$code > 3) {
+  if (!res$converged) {
     stop("The optimization did not converge.")
   }
-  coef <- res$estimate
+  coef <- res$argument
   hess <- res$hessian
 
   coef_names <- c(paste0("Basis ", 1:(degree + 1)), colnames(x))
@@ -76,7 +73,6 @@ coxstream <- function(
     time_unique = time_unique,
     formula = formula,
     idx_col = idx_col,
-    verbose = verbose,
     call = match.call()
   )
   class(fit) <- "coxstream"

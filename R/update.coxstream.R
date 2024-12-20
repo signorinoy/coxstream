@@ -16,7 +16,6 @@ update.coxstream <- function(object, data, degree = "auto", ...) {
   formula <- object$formula
   boundary <- object$boundary
   idx_col <- object$idx_col
-  verbose <- object$verbose
   time_stored <- object$time_stored
 
   mf <- stats::model.frame(formula, data)
@@ -31,7 +30,7 @@ update.coxstream <- function(object, data, degree = "auto", ...) {
   n_features <- length(object$theta_prev) - object$degree - 1
 
   if (degree == "auto") {
-    degree <- max(object$degree, floor(2 * length(time_unique)^0.2))
+    degree <- max(object$degree, floor(3 * length(time_unique)^0.2 - 4))
     degree <- min(degree, object$degree + 1)
   } else if (is.numeric(degree)) {
     degree <- as.integer(degree)
@@ -76,16 +75,15 @@ update.coxstream <- function(object, data, degree = "auto", ...) {
   theta_prev <- object$theta_prev
   hess_prev <- object$hess_prev
 
-  res <- stats::nlm(
-    f = objective, p = theta_prev, hessian = TRUE,
+  res <- trust(
+    objfun = objective, parinit = theta_prev, rinit = 1, rmax = 10,
     x = x, time = time, delta = delta, degree = degree, boundary = boundary,
-    theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int,
-    print.level = ifelse(verbose, 2, 0)
+    theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int
   )
-  if (res$code > 3) {
+  if (!res$converged) {
     stop("The optimization did not converge.")
   }
-  object$theta_prev <- res$estimate
+  object$theta_prev <- res$argument
   object$hess_prev <- res$hessian
 
   coef_names <- c(paste0("Basis ", 1:(object$degree + 1)), colnames(x))

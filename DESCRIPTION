@@ -16,7 +16,8 @@ Imports:
     lifecycle,
     splines2,
     stats,
-    survival
+    survival,
+    trust
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

@@ -83,7 +83,5 @@ objective <- function(
   loss <- loss1 + loss2 + loss3
   grad <- grad1 + grad2 + grad3
   hess <- hess1 + hess2 + hess3
-  attr(loss, "gradient") <- grad
-  attr(loss, "hessian") <- hess
-  return(loss)
+  return(list(value = loss, gradient = grad, hessian = hess))
 }
