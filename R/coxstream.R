@@ -49,13 +49,13 @@ coxstream <- function(
   hess_prev <- matrix(0, p + q, p + q)
   time_int <- c()
 
-  res <- trust(
+  res <- trust::trust(
     objfun = objective, parinit = theta_prev, rinit = 1, rmax = 10,
     x = x, time = time, delta = delta, degree = degree, boundary = boundary,
     theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int
   )
   if (!res$converged) {
-    stop("The optimization did not converge.")
+    warning("The optimization did not converge.")
   }
   coef <- res$argument
   hess <- res$hessian

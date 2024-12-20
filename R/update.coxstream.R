@@ -30,7 +30,9 @@ update.coxstream <- function(object, data, degree = "auto", ...) {
   n_features <- length(object$theta_prev) - object$degree - 1
 
   if (degree == "auto") {
-    degree <- max(object$degree, floor(3 * length(time_unique)^0.2 - 4))
+    degree <- max(
+      object$degree, floor(2 * length(time_unique)^0.2 + 1)
+    )
     degree <- min(degree, object$degree + 1)
   } else if (is.numeric(degree)) {
     degree <- as.integer(degree)
@@ -75,13 +77,13 @@ update.coxstream <- function(object, data, degree = "auto", ...) {
   theta_prev <- object$theta_prev
   hess_prev <- object$hess_prev
 
-  res <- trust(
+  res <- trust::trust(
     objfun = objective, parinit = theta_prev, rinit = 1, rmax = 10,
     x = x, time = time, delta = delta, degree = degree, boundary = boundary,
     theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int
   )
   if (!res$converged) {
-    stop("The optimization did not converge.")
+    warning("The optimization did not converge.")
   }
   object$theta_prev <- res$argument
   object$hess_prev <- res$hessian
