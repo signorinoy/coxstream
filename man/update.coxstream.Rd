@@ -4,7 +4,7 @@
 \alias{update.coxstream}
 \title{Update the \code{coxstream} with new data.}
 \usage{
-\method{update}{coxstream}(object, data, degree = "auto", ...)
+\method{update}{coxstream}(object, data, degree = "auto", alpha = 2, nu = 0.2, ...)
 }
 \arguments{
 \item{object}{A \code{coxstream} object.}
@@ -14,8 +14,14 @@
 \item{degree}{An integer representing the degree of the Bernstein polynomial,
 or a string specifying the degree of the Bernstein polynomial as a function
 of the number of patients, "auto", which is calculated as
-\eqn{\lceil N^{1/5} \rceil}, where \eqn{N} is the number of the unique
+\eqn{\lceil \alpha N^{\nu} \rceil}, where \eqn{N} is the number of the unique
 survival times.}
+
+\item{alpha}{A numeric value used to calculate the degree of the Bernstein
+polynomial. Default is 2.}
+
+\item{nu}{A numeric value used to calculate the degree of the Bernstein
+polynomial. Default is 0.2.}
 
 \item{...}{Additional arguments (not used).}
 }
