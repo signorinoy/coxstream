@@ -69,7 +69,7 @@
 <span><span class="va">formula</span> <span class="op">&lt;-</span> <span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span> <span class="op">+</span> <span class="va">X3</span> <span class="op">+</span> <span class="va">X4</span> <span class="op">+</span> <span class="va">X5</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/coxstream.html">coxstream</a></span><span class="op">(</span></span>
 <span>  <span class="va">formula</span>, <span class="va">sim</span><span class="op">[</span><span class="va">sim</span><span class="op">$</span><span class="va">batch_id</span> <span class="op">==</span> <span class="fl">1</span>, <span class="op">]</span>,</span>
-<span>  degree <span class="op">=</span> <span class="fl">1</span>, boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span>, idx_col <span class="op">=</span> <span class="st">"patient_id"</span></span>
+<span>  degree <span class="op">=</span> <span class="fl">4</span>, boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span>, idx_col <span class="op">=</span> <span class="st">"patient_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">batch</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">sim</span><span class="op">[</span><span class="va">sim</span><span class="op">$</span><span class="va">batch_id</span> <span class="op">==</span> <span class="va">batch</span>, <span class="op">]</span><span class="op">)</span></span>
@@ -77,22 +77,22 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; coxstream(formula = formula, data = sim[sim$batch_id == 1, ], </span></span>
-<span><span class="co">#&gt;     degree = 1, boundary = c(0, 3), idx_col = "patient_id")</span></span>
+<span><span class="co">#&gt;     degree = 4, boundary = c(0, 3), idx_col = "patient_id")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;       coef exp(coef)      se     z      p    </span></span>
-<span><span class="co">#&gt; X1 0.96165   2.61600 0.04945 19.45 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X2 0.98690   2.68289 0.05139 19.20 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X3 0.99070   2.69313 0.05256 18.85 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X4 0.88901   2.43273 0.05027 17.68 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X5 0.98974   2.69054 0.04812 20.57 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X1 1.00773   2.73938 0.05259 19.16 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X2 1.03455   2.81385 0.05464 18.94 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X3 1.02722   2.79329 0.05529 18.58 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X4 0.91575   2.49864 0.05263 17.40 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X5 1.04865   2.85379 0.05229 20.05 &lt;2e-16 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt;    exp(coef) exp(-coef) lower .95 upper .95</span></span>
-<span><span class="co">#&gt; X1 2.6160    0.3823     2.3743    2.8823   </span></span>
-<span><span class="co">#&gt; X2 2.6829    0.3727     2.4258    2.9672   </span></span>
-<span><span class="co">#&gt; X3 2.6931    0.3713     2.4295    2.9853   </span></span>
-<span><span class="co">#&gt; X4 2.4327    0.4111     2.2045    2.6846   </span></span>
-<span><span class="co">#&gt; X5 2.6905    0.3717     2.4484    2.9566</span></span></code></pre></div>
+<span><span class="co">#&gt; X1 2.7394    0.3650     2.4711    3.0368   </span></span>
+<span><span class="co">#&gt; X2 2.8138    0.3554     2.5281    3.1319   </span></span>
+<span><span class="co">#&gt; X3 2.7933    0.3580     2.5064    3.1130   </span></span>
+<span><span class="co">#&gt; X4 2.4986    0.4002     2.2538    2.7701   </span></span>
+<span><span class="co">#&gt; X5 2.8538    0.3504     2.5758    3.1618</span></span></code></pre></div>
 <p>Besides the estimated coefficients, we can also obtain the estimated baseline hazard function. The following code plots the estimated cumulative baseline hazard function and the true cumulative baseline hazard function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span>, length.out <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
