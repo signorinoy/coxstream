@@ -35,7 +35,7 @@ library(coxstream)
 formula <- survival::Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 fit <- coxstream(
   formula, sim[sim$batch_id == 1, ],
-  degree = 1, boundary = c(0, 3), idx_col = "patient_id"
+  degree = 4, boundary = c(0, 3), idx_col = "patient_id"
 )
 for (batch in 2:10) {
   fit <- update(fit, sim[sim$batch_id == batch, ])
@@ -43,22 +43,22 @@ for (batch in 2:10) {
 summary(fit)
 #> Call:
 #> coxstream(formula = formula, data = sim[sim$batch_id == 1, ], 
-#>     degree = 1, boundary = c(0, 3), idx_col = "patient_id")
+#>     degree = 4, boundary = c(0, 3), idx_col = "patient_id")
 #> 
 #>       coef exp(coef)      se     z      p    
-#> X1 0.96165   2.61600 0.04945 19.45 <2e-16 ***
-#> X2 0.98690   2.68289 0.05139 19.20 <2e-16 ***
-#> X3 0.99070   2.69313 0.05256 18.85 <2e-16 ***
-#> X4 0.88901   2.43273 0.05027 17.68 <2e-16 ***
-#> X5 0.98974   2.69054 0.04812 20.57 <2e-16 ***
+#> X1 1.00773   2.73938 0.05259 19.16 <2e-16 ***
+#> X2 1.03455   2.81385 0.05464 18.94 <2e-16 ***
+#> X3 1.02722   2.79329 0.05529 18.58 <2e-16 ***
+#> X4 0.91575   2.49864 0.05263 17.40 <2e-16 ***
+#> X5 1.04865   2.85379 0.05229 20.05 <2e-16 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #>    exp(coef) exp(-coef) lower .95 upper .95
-#> X1 2.6160    0.3823     2.3743    2.8823   
-#> X2 2.6829    0.3727     2.4258    2.9672   
-#> X3 2.6931    0.3713     2.4295    2.9853   
-#> X4 2.4327    0.4111     2.2045    2.6846   
-#> X5 2.6905    0.3717     2.4484    2.9566
+#> X1 2.7394    0.3650     2.4711    3.0368   
+#> X2 2.8138    0.3554     2.5281    3.1319   
+#> X3 2.7933    0.3580     2.5064    3.1130   
+#> X4 2.4986    0.4002     2.2538    2.7701   
+#> X5 2.8538    0.3504     2.5758    3.1618
 ```
 
 Besides the estimated coefficients, we can also obtain the estimated

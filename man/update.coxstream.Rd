@@ -14,8 +14,8 @@
 \item{degree}{An integer representing the degree of the Bernstein polynomial,
 or a string specifying the degree of the Bernstein polynomial as a function
 of the number of patients, "auto", which is calculated as
-\eqn{\lceil \alpha N^{\nu} \rceil}, where \eqn{N} is the number of the unique
-survival times.}
+\eqn{[\alpha N^{\nu}]}, where \eqn{N} is the number of the unique survival
+times.}
 
 \item{alpha}{A numeric value used to calculate the degree of the Bernstein
 polynomial. Default is 2.}

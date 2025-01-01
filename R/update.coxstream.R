@@ -6,8 +6,8 @@
 #' @param degree An integer representing the degree of the Bernstein polynomial,
 #' or a string specifying the degree of the Bernstein polynomial as a function
 #' of the number of patients, "auto", which is calculated as
-#' \eqn{\lceil \alpha N^{\nu} \rceil}, where \eqn{N} is the number of the unique
-#' survival times.
+#' \eqn{[\alpha N^{\nu}]}, where \eqn{N} is the number of the unique survival
+#' times.
 #' @param alpha A numeric value used to calculate the degree of the Bernstein
 #' polynomial. Default is 2.
 #' @param nu A numeric value used to calculate the degree of the Bernstein
@@ -36,7 +36,7 @@ update.coxstream <- function(
 
   if (degree == "auto") {
     degree <- max(
-      object$degree, floor(alpha * length(time_unique)^nu)
+      object$degree, round(alpha * length(time_unique)^nu)
     )
     degree <- min(degree, object$degree + 1)
   } else if (is.numeric(degree)) {
