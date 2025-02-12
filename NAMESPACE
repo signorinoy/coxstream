@@ -2,6 +2,7 @@
 
 S3method(basehaz,coxstream)
 S3method(coef,coxstream)
+S3method(predict,coxstream)
 S3method(print,summary.coxstream)
 S3method(summary,coxstream)
 S3method(update,coxstream)
