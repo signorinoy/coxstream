@@ -57,6 +57,7 @@ coxstream <- function(
   if (!res$converged) {
     warning("The optimization did not converge.")
   }
+  loss <- res$value
   coef <- res$argument
   hess <- res$hessian
 
@@ -67,6 +68,7 @@ coxstream <- function(
   fit <- list(
     degree = degree,
     boundary = boundary,
+    logLik = loss,
     theta_prev = coef,
     hess_prev = hess,
     time_stored = time_stored,
