@@ -32,19 +32,21 @@ This is a basic example which shows you how to solve a common problem:
 ``` r
 library(coxstream)
 ## basic example code
-formula <- survival::Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
+formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 fit <- coxstream(
   formula, sim[sim$batch_id == 1, ],
-  n_basis = 7, boundary = c(0, 3), idx_col = "patient_id"
+  n_basis = 7, boundary = c(0, 3), idx_col = "patient_id", nu = 0.4
 )
 for (batch in 2:10) {
-  fit <- update(fit, sim[sim$batch_id == batch, ], nu = 0.4)
+  fit <- update(fit, sim[sim$batch_id == batch, ])
 }
 summary(fit)
 #> Call:
 #> coxstream(formula = formula, data = sim[sim$batch_id == 1, ], 
-#>     n_basis = 7, boundary = c(0, 3), idx_col = "patient_id")
+#>     n_basis = 7, boundary = c(0, 3), idx_col = "patient_id", 
+#>     nu = 0.4)
 #> 
+#> Number of basis:  29 
 #>       coef exp(coef)      se     z      p    
 #> X1 0.98440   2.67621 0.05058 19.46 <2e-16 ***
 #> X2 1.01234   2.75202 0.05282 19.17 <2e-16 ***

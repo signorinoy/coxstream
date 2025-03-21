@@ -3,7 +3,10 @@
 
 ## usethis namespace: start
 #' @importFrom lifecycle deprecated
+#' @importFrom stats coef
+#' @importFrom stats predict
 #' @importFrom stats vcov
+#' @importFrom survival concordance
 #' @importFrom survival Surv
 ## usethis namespace: end
 NULL

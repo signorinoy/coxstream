@@ -4,7 +4,7 @@
 \alias{update.coxstream}
 \title{Update the \code{coxstream} with new data.}
 \usage{
-\method{update}{coxstream}(object, data, n_basis = "auto", alpha = 2, nu = 0.2, ...)
+\method{update}{coxstream}(object, data, n_basis = "auto", ...)
 }
 \arguments{
 \item{object}{A \code{coxstream} object.}
@@ -14,12 +14,6 @@
 \item{n_basis}{Either a positive odd integer specifying the number of basis
 functions, or the string "auto" to automatically determine this number based
 \eqn{[\alpha N^{\nu}]}, where \eqn{N} is the number of unique survival times.}
-
-\item{alpha}{A numeric value used to calculate the degree of the Bernstein
-polynomial. Default is 2.}
-
-\item{nu}{A numeric value used to calculate the degree of the Bernstein
-polynomial. Default is 0.2.}
 
 \item{...}{Additional arguments (not used).}
 }

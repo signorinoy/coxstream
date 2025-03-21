@@ -11,22 +11,28 @@
 #' @param idx_col The column name of the index column, which is used to
 #' distinguish different patients.
 #' @param scale The scaling factor for the pre-estimated coefficients.
-#'
-#' @return An object of class \code{coxstream}.
+#' @param alpha A numeric value used to calculate the number of basis functions.
+#' Default is 2.0.
+#' @param nu A numeric value used to calculate the number of basis functions.
+#' Default is 0.2.
+#' @param ... Additional arguments (not used).
+#' @return An object of class \code{coxstream} is returned.
 #' @export
 #'
 #' @examples
 #' library(coxstream)
-#' formula <- survival::Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
+#' formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 #' fit <- coxstream(
 #'   formula, sim[sim$batch_id == 1, ],
-#'   n_basis = 7, boundary = c(0, 3), idx_col = "patient_id"
+#'   n_basis = 7, boundary = c(0, 3), idx_col = "patient_id", nu = 0.4
 #' )
 #' for (batch in 2:10) {
-#'   fit <- update(fit, sim[sim$batch_id == batch, ], nu = 0.4)
+#'   fit <- update(fit, sim[sim$batch_id == batch, ])
 #' }
 #' summary(fit)
-coxstream <- function(formula, data, n_basis, boundary, idx_col, scale = 2) {
+coxstream <- function(
+    formula, data, n_basis, boundary, idx_col,
+    scale = 2, alpha = 2.0, nu = 0.2, ...) {
   if (n_basis %% 1 != 0 || n_basis < 1 || n_basis %% 2 != 1) {
     stop("The number of basis functions must be an odd integer greater than 0.")
   }
@@ -69,7 +75,7 @@ coxstream <- function(formula, data, n_basis, boundary, idx_col, scale = 2) {
   coef <- res$argument
   hess <- res$hessian
 
-  coef[(n_basis_cur + 1):n_basis_pre] <- 0
+  if (n_basis_cur < n_basis_pre) coef[(n_basis_cur + 1):n_basis_pre] <- 0
   coef_names <- c(paste0("Basis ", seq_len(n_basis_pre)), colnames(x))
   names(coef) <- coef_names
   colnames(hess) <- rownames(hess) <- coef_names
@@ -85,6 +91,8 @@ coxstream <- function(formula, data, n_basis, boundary, idx_col, scale = 2) {
     time_unique = time_unique,
     formula = formula,
     idx_col = idx_col,
+    alpha = alpha,
+    nu = nu,
     scale = scale,
     call = match.call()
   )
@@ -100,16 +108,11 @@ coxstream <- function(formula, data, n_basis, boundary, idx_col, scale = 2) {
 #' @param n_basis Either a positive odd integer specifying the number of basis
 #' functions, or the string "auto" to automatically determine this number based
 #' \eqn{[\alpha N^{\nu}]}, where \eqn{N} is the number of unique survival times.
-#' @param alpha A numeric value used to calculate the degree of the Bernstein
-#' polynomial. Default is 2.
-#' @param nu A numeric value used to calculate the degree of the Bernstein
-#' polynomial. Default is 0.2.
 #' @param ... Additional arguments (not used).
 #'
 #' @return An object of class \code{coxstream}.
 #' @export
-update.coxstream <- function(
-    object, data, n_basis = "auto", alpha = 2, nu = 0.2, ...) {
+update.coxstream <- function(object, data, n_basis = "auto", ...) {
   formula <- object$formula
   boundary <- object$boundary
   idx_col <- object$idx_col
@@ -128,12 +131,12 @@ update.coxstream <- function(
 
   if (n_basis == "auto") {
     n_basis_cur <- max(
-      object$n_basis_cur, round(alpha * length(time_unique)^nu)
+      object$n_basis_cur, round(object$alpha * length(time_unique)^object$nu)
     )
   } else if (is.numeric(n_basis)) {
     n_basis_cur <- as.integer(n_basis)
   } else {
-    stop("The degree must be an integer or 'auto'.")
+    stop("The n_basis must be an integer or 'auto'.")
   }
   n_basis_cur <- make_odd(n_basis_cur)
   n_basis_pre <- make_odd(round((n_basis_cur - 1) * scale))
@@ -186,7 +189,9 @@ update.coxstream <- function(
   object$theta_prev <- res$argument
   object$hess_prev <- res$hessian
 
-  object$theta_prev[(n_basis_cur + 1):n_basis_pre] <- 0
+  if (n_basis_cur < n_basis_pre) {
+    object$theta_prev[(n_basis_cur + 1):n_basis_pre] <- 0
+  }
   coef_names <- c(paste0("Basis ", seq_len(n_basis_pre)), colnames(x))
   names(object$theta_prev) <- coef_names
   colnames(object$hess_prev) <- rownames(object$hess_prev) <- coef_names
@@ -320,6 +325,7 @@ print.summary.coxstream <- function(
   cat("Call:\n")
   print(x$call)
   cat("\n")
+  cat("Number of basis: ", x$n_basis_cur, "\n")
 
   n_basis <- x$n_basis_cur
   stats::printCoefmat(x$coefficients[(n_basis + 1):nrow(x$coefficients), ],
@@ -357,9 +363,7 @@ predict.coxstream <- function(
     type = c("lp", "terms", "risk", "expected", "survival"), ...) {
   type <- match.arg(type)
   x <- stats::model.matrix(object$formula, newdata)[, -1]
-  p <- ncol(x)
-  q <- object$degree + 1
-  beta <- object$theta_prev[(q + 1):(q + p)]
+  beta <- object$theta_prev[(object$n_basis_pre + 1):length(object$theta_prev)]
   lp <- x %*% beta
   if (type == "lp") {
     return(lp)
@@ -428,5 +432,71 @@ basehaz.coxstream <- function(
       paste("upper .", round(100 * conf.int, 2), sep = "")
     )
   )
-  return(basehaz_matrix)
+  basehaz_matrix
+}
+
+#' Cross-validation for \code{coxstream} objects
+#' @param formula A formula expression as for regression models, of the form
+#' \code{response ~ predictors}. The response must be a survival object as
+#' returned by the \code{\link{Surv}} function.
+#' @param data A data frame containing the variables in the model.
+#' @param boundary A vector of length 2 containing the boundary knots.
+#' @param idx_col The column name of the index column, which is used to
+#' distinguish different patients.
+#' @param nu A numeric value used to calculate the number of basis functions.
+#' Default is 0.2.
+#' @param n_folds A positive integer specifying the number of folds for
+#' cross-validation. Default is 10.
+#' @param n_alphas A positive integer specifying the number of alpha values to
+#' test. Default is 10.
+#' @param seed An integer specifying the random seed for reproducibility.
+#' Default is 0.
+#' @return An object of class \code{cv.coxstream} is returned.
+#' @export
+cv.coxstream <- function(
+    formula, data, boundary, idx_col,
+    nu = 0.2, n_folds = 10, n_alphas = 10, seed = 0) {
+  set.seed(seed)
+  folds <- sample(seq_len(n_folds), nrow(data), replace = TRUE)
+  n_basises <- 2 * seq_len(n_alphas) + 1
+
+  cv_score <- matrix(0, nrow = n_alphas, ncol = n_folds)
+  for (fold in seq_len(n_folds)) {
+    data_train <- data[folds != fold, ]
+
+    data_test <- data[folds == fold, ]
+    y_test <- stats::model.response(stats::model.frame(formula, data_test))
+
+    for (i in seq_along(n_basises)) {
+      fit <- coxstream(
+        formula, data_train,
+        n_basis = n_basises[i],
+        boundary = boundary, idx_col = idx_col, scale = 2.0
+      )
+      df_test <- data.frame(
+        time = y_test[, 1], status = y_test[, 2],
+        pred = -predict(fit, newdata = data_test, type = "lp")
+      )
+      cv_score[i, fold] <-
+        concordance(Surv(time, status) ~ pred, df_test)$concordance
+    }
+  }
+  n_uniques <- length(unique(data$time)) * (n_folds - 1) / n_folds
+  alpha <- n_basises / n_uniques^nu
+  cvm <- apply(cv_score, 1, mean)
+  cvsd <- apply(cv_score, 1, stats::sd)
+  index <- c(which.max(cvm), which.max(cvm - cvsd))
+
+  object <- list(
+    alpha = alpha,
+    cvm = cvm,
+    cvsd = cvsd,
+    cvup = cvm + cvsd,
+    cvlo = cvm - cvsd,
+    nbasis = n_basises,
+    alpha.min = alpha[index[1]],
+    alpha.1se = alpha[index[2]]
+  )
+  class(object) <- "cv.coxstream"
+  object
 }

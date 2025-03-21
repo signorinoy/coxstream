@@ -1,3 +1,10 @@
+#' Survival Function Wrapper
+#' 
+#' This alias provides direct access to the survival::Surv function.
+#' @inheritParams survival::Surv
+#' @export
+Surv <- survival::Surv # nolint: object_name_linter.
+
 #' Return odd number
 #'
 #' If the number is even, adds 1 to convert it into an odd number.

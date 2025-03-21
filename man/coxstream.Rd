@@ -4,7 +4,17 @@
 \alias{coxstream}
 \title{Streaming Cox model with repeated observations}
 \usage{
-coxstream(formula, data, n_basis, boundary, idx_col, scale = 2)
+coxstream(
+  formula,
+  data,
+  n_basis,
+  boundary,
+  idx_col,
+  scale = 2,
+  alpha = 2,
+  nu = 0.2,
+  ...
+)
 }
 \arguments{
 \item{formula}{A formula expression as for regression models, of the form
@@ -22,22 +32,30 @@ functions.}
 distinguish different patients.}
 
 \item{scale}{The scaling factor for the pre-estimated coefficients.}
+
+\item{alpha}{A numeric value used to calculate the number of basis functions.
+Default is 2.0.}
+
+\item{nu}{A numeric value used to calculate the number of basis functions.
+Default is 0.2.}
+
+\item{...}{Additional arguments (not used).}
 }
 \value{
-An object of class \code{coxstream}.
+An object of class \code{coxstream} is returned.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }
 \examples{
 library(coxstream)
-formula <- survival::Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
+formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 fit <- coxstream(
   formula, sim[sim$batch_id == 1, ],
-  n_basis = 7, boundary = c(0, 3), idx_col = "patient_id"
+  n_basis = 7, boundary = c(0, 3), idx_col = "patient_id", nu = 0.4
 )
 for (batch in 2:10) {
-  fit <- update(fit, sim[sim$batch_id == batch, ], nu = 0.4)
+  fit <- update(fit, sim[sim$batch_id == batch, ])
 }
 summary(fit)
 }
