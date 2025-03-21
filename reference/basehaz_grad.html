@@ -28,7 +28,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Gradient of the Baseline Hazard Function</h1>
-      <small class="dont-index">Source: <a href="https://github.com/SignorinoY/coxstream/blob/main/R/basehaz_grad.R" class="external-link"><code>R/basehaz_grad.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/SignorinoY/coxstream/blob/main/R/helpers.R" class="external-link"><code>R/helpers.R</code></a></small>
       <div class="d-none name"><code>basehaz_grad.Rd</code></div>
     </div>
 
@@ -59,13 +59,12 @@ Cox proportional hazards models.</p></dd>
 <dd><p>A list of parameters containing the following components:</p><dl><dt>alpha</dt>
 <dd><p>The coefficients of the Bernstein polynomial.</p></dd>
 
-<dt>degree</dt>
-<dd><p>A non-negative integer specifying the degree of the
-Bernstein polynomial.</p></dd>
+<dt>n_basis</dt>
+<dd><p>A positive odd integer specifying the number of fourier
+basis functions.</p></dd>
 
-<dt>boundary</dt>
-<dd><p>Boundary knots at which to anchor the Bernstein
-polynomial.</p></dd>
+<dt>period</dt>
+<dd><p>The period of the Fourier basis functions.</p></dd>
 
 
 </dl></dd>
