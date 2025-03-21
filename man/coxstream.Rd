@@ -4,7 +4,7 @@
 \alias{coxstream}
 \title{Streaming Cox model with repeated observations}
 \usage{
-coxstream(formula, data, degree, boundary, idx_col)
+coxstream(formula, data, n_basis, boundary, idx_col, scale = 2)
 }
 \arguments{
 \item{formula}{A formula expression as for regression models, of the form
@@ -13,12 +13,15 @@ returned by the \code{\link{Surv}} function.}
 
 \item{data}{A data frame containing the variables in the model.}
 
-\item{degree}{The degree of the Bernstein polynomial.}
+\item{n_basis}{A positive odd integer specifying the number of fourier basis
+functions.}
 
 \item{boundary}{A vector of length 2 containing the boundary knots.}
 
 \item{idx_col}{The column name of the index column, which is used to
 distinguish different patients.}
+
+\item{scale}{The scaling factor for the pre-estimated coefficients.}
 }
 \value{
 An object of class \code{coxstream}.
@@ -31,10 +34,10 @@ library(coxstream)
 formula <- survival::Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 fit <- coxstream(
   formula, sim[sim$batch_id == 1, ],
-  degree = 3, boundary = c(0, 3), idx_col = "patient_id"
+  n_basis = 7, boundary = c(0, 3), idx_col = "patient_id"
 )
 for (batch in 2:10) {
-  fit <- update(fit, sim[sim$batch_id == batch, ])
+  fit <- update(fit, sim[sim$batch_id == batch, ], nu = 0.4)
 }
 summary(fit)
 }
