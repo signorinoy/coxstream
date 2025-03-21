@@ -66,19 +66,21 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/SignorinoY/coxstream" class="external-link">coxstream</a></span><span class="op">)</span></span>
 <span><span class="co">## basic example code</span></span>
-<span><span class="va">formula</span> <span class="op">&lt;-</span> <span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span> <span class="op">+</span> <span class="va">X3</span> <span class="op">+</span> <span class="va">X4</span> <span class="op">+</span> <span class="va">X5</span></span>
+<span><span class="va">formula</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/Surv.html">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span> <span class="op">+</span> <span class="va">X3</span> <span class="op">+</span> <span class="va">X4</span> <span class="op">+</span> <span class="va">X5</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/coxstream.html">coxstream</a></span><span class="op">(</span></span>
 <span>  <span class="va">formula</span>, <span class="va">sim</span><span class="op">[</span><span class="va">sim</span><span class="op">$</span><span class="va">batch_id</span> <span class="op">==</span> <span class="fl">1</span>, <span class="op">]</span>,</span>
-<span>  n_basis <span class="op">=</span> <span class="fl">7</span>, boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span>, idx_col <span class="op">=</span> <span class="st">"patient_id"</span></span>
+<span>  n_basis <span class="op">=</span> <span class="fl">7</span>, boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span>, idx_col <span class="op">=</span> <span class="st">"patient_id"</span>, nu <span class="op">=</span> <span class="fl">0.4</span></span>
 <span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">batch</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">sim</span><span class="op">[</span><span class="va">sim</span><span class="op">$</span><span class="va">batch_id</span> <span class="op">==</span> <span class="va">batch</span>, <span class="op">]</span>, nu <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span></span>
+<span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">sim</span><span class="op">[</span><span class="va">sim</span><span class="op">$</span><span class="va">batch_id</span> <span class="op">==</span> <span class="va">batch</span>, <span class="op">]</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; coxstream(formula = formula, data = sim[sim$batch_id == 1, ], </span></span>
-<span><span class="co">#&gt;     n_basis = 7, boundary = c(0, 3), idx_col = "patient_id")</span></span>
+<span><span class="co">#&gt;     n_basis = 7, boundary = c(0, 3), idx_col = "patient_id", </span></span>
+<span><span class="co">#&gt;     nu = 0.4)</span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Number of basis:  29 </span></span>
 <span><span class="co">#&gt;       coef exp(coef)      se     z      p    </span></span>
 <span><span class="co">#&gt; X1 0.98440   2.67621 0.05058 19.46 &lt;2e-16 ***</span></span>
 <span><span class="co">#&gt; X2 1.01234   2.75202 0.05282 19.17 &lt;2e-16 ***</span></span>
