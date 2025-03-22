@@ -43,7 +43,7 @@ library(coxstream)
 formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 fit <- coxstream(
   formula, sim[sim$batch_id == 1, ],
-  n_basis = 7, boundary = c(0, 3), idx_col = "patient_id", nu = 0.4
+  n_basis = 3, boundary = c(0, 3), idx_col = "patient_id"
 )
 for (batch in 2:10) {
   fit <- update(fit, sim[sim$batch_id == batch, ])

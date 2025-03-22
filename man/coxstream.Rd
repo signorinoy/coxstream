@@ -23,8 +23,7 @@ returned by the \code{\link{Surv}} function.}
 
 \item{data}{A data frame containing the variables in the model.}
 
-\item{n_basis}{A positive odd integer specifying the number of fourier basis
-functions.}
+\item{n_basis}{A positive integer specifying the number of basis functions.}
 
 \item{boundary}{A vector of length 2 containing the boundary knots.}
 
@@ -52,7 +51,7 @@ library(coxstream)
 formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 fit <- coxstream(
   formula, sim[sim$batch_id == 1, ],
-  n_basis = 7, boundary = c(0, 3), idx_col = "patient_id", nu = 0.4
+  n_basis = 3, boundary = c(0, 3), idx_col = "patient_id"
 )
 for (batch in 2:10) {
   fit <- update(fit, sim[sim$batch_id == batch, ])

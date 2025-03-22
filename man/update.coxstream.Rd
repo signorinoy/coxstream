@@ -11,7 +11,7 @@
 
 \item{data}{A data frame containing the variables in the model.}
 
-\item{n_basis}{Either a positive odd integer specifying the number of basis
+\item{n_basis}{Either a positive integer specifying the number of basis
 functions, or the string "auto" to automatically determine this number based
 \eqn{[\alpha N^{\nu}]}, where \eqn{N} is the number of unique survival times.}
 

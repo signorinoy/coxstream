@@ -1,17 +1,33 @@
 #' Survival Function Wrapper
-#' 
+#'
 #' This alias provides direct access to the survival::Surv function.
 #' @inheritParams survival::Surv
 #' @export
 Surv <- survival::Surv # nolint: object_name_linter.
 
-#' Return odd number
+#' Compute Chebyshev Polynomial Basis
 #'
-#' If the number is even, adds 1 to convert it into an odd number.
+#' This function generates a matrix of Chebyshev polynomial evaluations for a
+#' given numeric vector, normalizing the input values to the interval
+#' \eqn{[-1, 1]}, based on the provided boundary.
 #'
-#' @param x A numeric vector.
-#' @return A numeric vector with all elements as odd numbers.
-make_odd <- function(x) x + (x %% 2 == 0)
+#' @param x A numeric vector of values at which to evaluate the Chebyshev
+#' polynomials.
+#' @param n_basis An integer specifying the number of Chebyshev basis functions
+#'  (i.e., polynomial degrees) to compute, starting from degree 0 up to degree
+#' n_basis - 1.
+#' @param boundary A numeric vector of length 2 that defines the lower and upper
+#'  bounds for normalization.
+#'
+#' @return A matrix where each column corresponds to the Chebyshev polynomial of
+#' a specific degree evaluated at the normalized input values.
+chebyshev <- function(x, n_basis, boundary) {
+  t_norm <- (2 * x - sum(boundary)) / abs(boundary[2] - boundary[1])
+  b <- do.call(
+    cbind, lapply(0:(n_basis - 1), pracma::chebPoly, t_norm)
+  )
+  if (n_basis == 1) matrix(b, nrow = length(x)) else as.matrix(b)
+}
 
 #' Generic function for basehaz
 #'
@@ -32,15 +48,16 @@ basehaz <- function(object, ...) {
 #' Cox proportional hazards models.
 #' @param parms A list of parameters containing the following components:
 #' \describe{
-#'   \item{alpha}{The coefficients of the Bernstein polynomial.}
-#'   \item{n_basis}{A positive odd integer specifying the number of fourier
+#'   \item{alpha}{The coefficients of the Chebyshev polynomial.}
+#'   \item{n_basis}{A positive odd integer specifying the number of Chebyshev
 #' basis functions.}
-#'  \item{period}{The period of the Fourier basis functions.}
+#'  \item{boundary}{A numeric vector of length 2 that defines the lower and
+#' upper bounds for normalization.}
 #' }
 #'
 #' @return The baseline hazard function evaluated at the specified time point.
 basehaz_ode <- function(t, y, parms) {
-  b <- fda::fourier(t, nbasis = parms$n_basis, period = parms$period)
+  b <- chebyshev(t, parms$n_basis, parms$boundary)
   basehaz <- exp(sum(parms$alpha * b))
   list(basehaz)
 }
@@ -53,16 +70,17 @@ basehaz_ode <- function(t, y, parms) {
 #' Cox proportional hazards models.
 #' @param parms A list of parameters containing the following components:
 #' \describe{
-#'   \item{alpha}{The coefficients of the Bernstein polynomial.}
-#'   \item{n_basis}{A positive odd integer specifying the number of fourier
+#'   \item{alpha}{The coefficients of the Chebyshev polynomial.}
+#'   \item{n_basis}{A positive odd integer specifying the number of Chebyshev
 #' basis functions.}
-#'  \item{period}{The period of the Fourier basis functions.}
+#'  \item{boundary}{A numeric vector of length 2 that defines the lower and
+#' upper bounds for normalization.}
 #' }
 #'
 #' @return The gradient with respect to the coefficients of the baseline hazard
 #' function evaluated at the specified time point.
 basehaz_grad <- function(t, y, parms) {
-  b <- fda::fourier(t, nbasis = parms$n_basis, period = parms$period)
+  b <- chebyshev(t, parms$n_basis, parms$boundary)
   list(exp(sum(parms$alpha * b)) * b)
 }
 
@@ -74,16 +92,17 @@ basehaz_grad <- function(t, y, parms) {
 #' Cox proportional hazards models.
 #' @param parms A list of parameters containing the following components:
 #' \describe{
-#'   \item{alpha}{The coefficients of the Bernstein polynomial.}
-#'   \item{n_basis}{A positive odd integer specifying the number of fourier
+#'   \item{alpha}{The coefficients of the Chebyshev polynomial.}
+#'   \item{n_basis}{A positive odd integer specifying the number of Chebyshev
 #' basis functions.}
-#'  \item{period}{The period of the Fourier basis functions.}
+#'  \item{boundary}{A numeric vector of length 2 that defines the lower and
+#' upper bounds for normalization.}
 #' }
 #'
 #' @return The Hessian matrix with respect to the coefficients of the baseline
 #' hazard function evaluated at the specified time point.
 basehaz_hess <- function(t, y, parms) {
-  b <- fda::fourier(t, nbasis = parms$n_basis, period = parms$period)
+  b <- chebyshev(t, parms$n_basis, parms$boundary)
   basehaz_hess <- t(b) %*% b * exp(sum(parms$alpha * b))
   list(basehaz_hess)
 }
@@ -91,20 +110,18 @@ basehaz_hess <- function(t, y, parms) {
 objective <- function(
     theta, x, time, delta, n_basis_cur, n_basis_pre, boundary,
     theta_prev, hess_prev, time_int) {
-
   n_params <- length(theta)
-  period <- abs(boundary[2] - boundary[1])
 
   alpha <- c(theta[seq_len(n_basis_cur)], rep(0, n_basis_pre - n_basis_cur))
   beta <- theta[(n_basis_pre + 1):n_params]
-  parms <- list(alpha = alpha, n_basis = n_basis_pre, period = period)
+  parms <- list(alpha = alpha, n_basis = n_basis_pre, boundary = boundary)
 
   loss1 <- (theta - theta_prev) %*% hess_prev %*% (theta - theta_prev) / 2
   grad1 <- as.vector(hess_prev %*% (theta - theta_prev))
   hess1 <- hess_prev
 
   u <- unique(time)
-  b_uniq <- fda::fourier(u, n_basis_pre, period)
+  b_uniq <- chebyshev(u, n_basis_pre, boundary)
   b <- b_uniq[match(time, u), ]
   cbh_uniq <- as.matrix(deSolve::ode(
     y = 0, times = c(0, u), func = basehaz_ode, parms = parms, method = "ode45"

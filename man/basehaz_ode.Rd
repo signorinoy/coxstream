@@ -15,10 +15,11 @@ Cox proportional hazards models.}
 
 \item{parms}{A list of parameters containing the following components:
 \describe{
-\item{alpha}{The coefficients of the Bernstein polynomial.}
-\item{n_basis}{A positive odd integer specifying the number of fourier
+\item{alpha}{The coefficients of the Chebyshev polynomial.}
+\item{n_basis}{A positive odd integer specifying the number of Chebyshev
 basis functions.}
-\item{period}{The period of the Fourier basis functions.}
+\item{boundary}{A numeric vector of length 2 that defines the lower and
+upper bounds for normalization.}
 }}
 }
 \value{

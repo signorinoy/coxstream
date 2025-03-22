@@ -3,6 +3,7 @@
 
 ## usethis namespace: start
 #' @importFrom lifecycle deprecated
+#' @importFrom pracma chebPoly
 #' @importFrom stats coef
 #' @importFrom stats predict
 #' @importFrom stats vcov

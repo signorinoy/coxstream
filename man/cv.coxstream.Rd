@@ -11,7 +11,7 @@ cv.coxstream(
   idx_col,
   nu = 0.2,
   n_folds = 10,
-  n_alphas = 10,
+  n_alphas = 5,
   seed = 0
 )
 }
@@ -34,7 +34,7 @@ Default is 0.2.}
 cross-validation. Default is 10.}
 
 \item{n_alphas}{A positive integer specifying the number of alpha values to
-test. Default is 10.}
+test. Default is 5}
 
 \item{seed}{An integer specifying the random seed for reproducibility.
 Default is 0.}

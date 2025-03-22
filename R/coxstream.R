@@ -5,8 +5,7 @@
 #' \code{response ~ predictors}. The response must be a survival object as
 #' returned by the \code{\link{Surv}} function.
 #' @param data A data frame containing the variables in the model.
-#' @param n_basis A positive odd integer specifying the number of fourier basis
-#' functions.
+#' @param n_basis A positive integer specifying the number of basis functions.
 #' @param boundary A vector of length 2 containing the boundary knots.
 #' @param idx_col The column name of the index column, which is used to
 #' distinguish different patients.
@@ -24,7 +23,7 @@
 #' formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 #' fit <- coxstream(
 #'   formula, sim[sim$batch_id == 1, ],
-#'   n_basis = 7, boundary = c(0, 3), idx_col = "patient_id", nu = 0.4
+#'   n_basis = 3, boundary = c(0, 3), idx_col = "patient_id"
 #' )
 #' for (batch in 2:10) {
 #'   fit <- update(fit, sim[sim$batch_id == batch, ])
@@ -33,8 +32,8 @@
 coxstream <- function(
     formula, data, n_basis, boundary, idx_col,
     scale = 2, alpha = 2.0, nu = 0.2, ...) {
-  if (n_basis %% 1 != 0 || n_basis < 1 || n_basis %% 2 != 1) {
-    stop("The number of basis functions must be an odd integer greater than 0.")
+  if (n_basis %% 1 != 0 || n_basis < 1 ) {
+    stop("The number of basis functions must be an positive integer.")
   }
   mf <- stats::model.frame(formula, data)
   y <- stats::model.response(mf)
@@ -54,7 +53,7 @@ coxstream <- function(
   delta <- delta[sorted]
 
   n_basis_cur <- n_basis
-  n_basis_pre <- make_odd(round((n_basis - 1) * scale))
+  n_basis_pre <- round(n_basis * scale)
 
   n_features <- ncol(x)
   n_params <- n_features + n_basis_pre
@@ -105,7 +104,7 @@ coxstream <- function(
 #' `r lifecycle::badge('experimental')`
 #' @param object A \code{coxstream} object.
 #' @param data A data frame containing the variables in the model.
-#' @param n_basis Either a positive odd integer specifying the number of basis
+#' @param n_basis Either a positive integer specifying the number of basis
 #' functions, or the string "auto" to automatically determine this number based
 #' \eqn{[\alpha N^{\nu}]}, where \eqn{N} is the number of unique survival times.
 #' @param ... Additional arguments (not used).
@@ -138,8 +137,7 @@ update.coxstream <- function(object, data, n_basis = "auto", ...) {
   } else {
     stop("The n_basis must be an integer or 'auto'.")
   }
-  n_basis_cur <- make_odd(n_basis_cur)
-  n_basis_pre <- make_odd(round((n_basis_cur - 1) * scale))
+  n_basis_pre <- round(n_basis_cur * scale)
   n_features <- ncol(x)
   n_params <- n_basis_pre + n_features
 
@@ -397,7 +395,6 @@ basehaz.coxstream <- function(
 
   n_basis <- object$n_basis_cur
   boundary <- object$boundary
-  period <- abs(boundary[2] - boundary[1])
 
   if (!is.null(newdata)) {
     time <- newdata
@@ -405,10 +402,10 @@ basehaz.coxstream <- function(
     time <- seq.int(boundary[1], boundary[2], length.out = 100)
   }
   alpha <- object$theta_prev[seq_len(n_basis)]
-  parms <- list(alpha = alpha, n_basis = n_basis, period = period)
+  parms <- list(alpha = alpha, n_basis = n_basis, boundary = boundary)
 
   u <- unique(time)
-  b_pre <- fda::fourier(u, n_basis, period)
+  b_pre <- chebyshev(u, n_basis, boundary)
   b <- b_pre[match(time, u), ]
   cbh_pre <- as.matrix(deSolve::ode(
     y = 0, times = c(0, u), func = basehaz_ode, parms = parms, method = "ode45"
@@ -448,17 +445,17 @@ basehaz.coxstream <- function(
 #' @param n_folds A positive integer specifying the number of folds for
 #' cross-validation. Default is 10.
 #' @param n_alphas A positive integer specifying the number of alpha values to
-#' test. Default is 10.
+#' test. Default is 5
 #' @param seed An integer specifying the random seed for reproducibility.
 #' Default is 0.
 #' @return An object of class \code{cv.coxstream} is returned.
 #' @export
 cv.coxstream <- function(
     formula, data, boundary, idx_col,
-    nu = 0.2, n_folds = 10, n_alphas = 10, seed = 0) {
+    nu = 0.2, n_folds = 10, n_alphas = 5, seed = 0) {
   set.seed(seed)
   folds <- sample(seq_len(n_folds), nrow(data), replace = TRUE)
-  n_basises <- 2 * seq_len(n_alphas) + 1
+  n_basises <- seq_len(n_alphas) + 1
 
   cv_score <- matrix(0, nrow = n_alphas, ncol = n_folds)
   for (fold in seq_len(n_folds)) {
@@ -471,7 +468,7 @@ cv.coxstream <- function(
       fit <- coxstream(
         formula, data_train,
         n_basis = n_basises[i],
-        boundary = boundary, idx_col = idx_col, scale = 2.0
+        boundary = boundary, idx_col = idx_col, scale = 1.0
       )
       df_test <- data.frame(
         time = y_test[, 1], status = y_test[, 2],

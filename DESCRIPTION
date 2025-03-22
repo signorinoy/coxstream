@@ -13,8 +13,8 @@ Depends:
     R (>= 4.0)
 Imports: 
     deSolve,
-    fda,
     lifecycle,
+    pracma,
     stats,
     survival,
     trust
