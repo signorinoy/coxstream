@@ -69,7 +69,7 @@
 <span><span class="va">formula</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/Surv.html">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span> <span class="op">+</span> <span class="va">X3</span> <span class="op">+</span> <span class="va">X4</span> <span class="op">+</span> <span class="va">X5</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/coxstream.html">coxstream</a></span><span class="op">(</span></span>
 <span>  <span class="va">formula</span>, <span class="va">sim</span><span class="op">[</span><span class="va">sim</span><span class="op">$</span><span class="va">batch_id</span> <span class="op">==</span> <span class="fl">1</span>, <span class="op">]</span>,</span>
-<span>  n_basis <span class="op">=</span> <span class="fl">7</span>, boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span>, idx_col <span class="op">=</span> <span class="st">"patient_id"</span>, nu <span class="op">=</span> <span class="fl">0.4</span></span>
+<span>  n_basis <span class="op">=</span> <span class="fl">3</span>, boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span>, idx_col <span class="op">=</span> <span class="st">"patient_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">batch</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">sim</span><span class="op">[</span><span class="va">sim</span><span class="op">$</span><span class="va">batch_id</span> <span class="op">==</span> <span class="va">batch</span>, <span class="op">]</span><span class="op">)</span></span>
@@ -77,24 +77,23 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; coxstream(formula = formula, data = sim[sim$batch_id == 1, ], </span></span>
-<span><span class="co">#&gt;     n_basis = 7, boundary = c(0, 3), idx_col = "patient_id", </span></span>
-<span><span class="co">#&gt;     nu = 0.4)</span></span>
+<span><span class="co">#&gt;     n_basis = 3, boundary = c(0, 3), idx_col = "patient_id")</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Number of basis:  29 </span></span>
+<span><span class="co">#&gt; Number of basis:  7 </span></span>
 <span><span class="co">#&gt;       coef exp(coef)      se     z      p    </span></span>
-<span><span class="co">#&gt; X1 0.98440   2.67621 0.05058 19.46 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X2 1.01234   2.75202 0.05282 19.17 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X3 1.01546   2.76063 0.05294 19.18 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X4 0.87865   2.40766 0.05111 17.19 &lt;2e-16 ***</span></span>
-<span><span class="co">#&gt; X5 1.03593   2.81771 0.05038 20.56 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X1 1.02653   2.79136 0.04993 20.56 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X2 1.04367   2.83962 0.05241 19.91 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X3 1.04391   2.84029 0.05289 19.74 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X4 0.89585   2.44943 0.05068 17.68 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; X5 1.06450   2.89940 0.04994 21.32 &lt;2e-16 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt;    exp(coef) exp(-coef) lower .95 upper .95</span></span>
-<span><span class="co">#&gt; X1 2.6762    0.3737     2.4236    2.9551   </span></span>
-<span><span class="co">#&gt; X2 2.7520    0.3634     2.4814    3.0522   </span></span>
-<span><span class="co">#&gt; X3 2.7606    0.3622     2.4885    3.0625   </span></span>
-<span><span class="co">#&gt; X4 2.4077    0.4153     2.1782    2.6613   </span></span>
-<span><span class="co">#&gt; X5 2.8177    0.3549     2.5528    3.1101</span></span></code></pre></div>
+<span><span class="co">#&gt; X1 2.7914    0.3582     2.5311    3.0784   </span></span>
+<span><span class="co">#&gt; X2 2.8396    0.3522     2.5624    3.1468   </span></span>
+<span><span class="co">#&gt; X3 2.8403    0.3521     2.5606    3.1506   </span></span>
+<span><span class="co">#&gt; X4 2.4494    0.4083     2.2178    2.7052   </span></span>
+<span><span class="co">#&gt; X5 2.8994    0.3449     2.6291    3.1975</span></span></code></pre></div>
 <p>Besides the estimated coefficients, we can also obtain the estimated baseline hazard function. The following code plots the estimated cumulative baseline hazard function and the true cumulative baseline hazard function.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span>, length.out <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
