@@ -32,7 +32,7 @@
 coxstream <- function(
     formula, data, n_basis, boundary, idx_col,
     scale = 2, alpha = 2.0, nu = 0.2, ...) {
-  if (n_basis %% 1 != 0 || n_basis < 1 ) {
+  if (n_basis %% 1 != 0 || n_basis < 1) {
     stop("The number of basis functions must be an positive integer.")
   }
   mf <- stats::model.frame(formula, data)
@@ -43,6 +43,7 @@ coxstream <- function(
   x <- stats::model.matrix(formula, data)[, -1]
   rownames(x) <- data[[idx_col]]
 
+  n_samples <- nrow(x)
   # Store the survival times for each patient
   time_stored <- sort(time[delta == 0])
   time_unique <- unique(time)
@@ -64,7 +65,7 @@ coxstream <- function(
   cur_idx <- c(seq_len(n_basis_cur), (n_basis_pre + 1):n_params)
   res <- trust::trust(
     objfun = objective, parinit = theta_prev[cur_idx], rinit = 1, rmax = 10,
-    x = x, time = time, delta = delta, 
+    x = x, time = time, delta = delta,
     n_basis = n_basis_cur, boundary = boundary,
     theta_prev = theta_prev[cur_idx], hess_prev = hess_prev[cur_idx, cur_idx],
     time_int = time_int
@@ -74,7 +75,7 @@ coxstream <- function(
   }
   theta_prev[cur_idx] <- res$argument
   res <- objective(
-    theta_prev, x, time, delta, n_basis_pre, boundary, theta_prev, 
+    theta_prev, x, time, delta, n_basis_pre, boundary, theta_prev,
     hess_prev, time_int
   )
   loss <- res$value
@@ -91,6 +92,7 @@ coxstream <- function(
     logLik = loss,
     theta_prev = theta_prev,
     hess_prev = hess,
+    n_samples = n_samples,
     time_stored = time_stored,
     time_unique = time_unique,
     formula = formula,
@@ -131,8 +133,9 @@ update.coxstream <- function(object, data, n_basis = "auto", ...) {
   x <- stats::model.matrix(formula, data)[, -1]
   rownames(x) <- data[[idx_col]]
 
-  time_unique <- unique(c(object$time_unique, time))
+  n_samples <- object$n_samples + nrow(x)
 
+  time_unique <- unique(c(object$time_unique, time))
   if (n_basis == "auto") {
     n_basis_cur <- max(
       object$n_basis_cur, round(object$alpha * length(time_unique)^object$nu)
@@ -145,19 +148,6 @@ update.coxstream <- function(object, data, n_basis = "auto", ...) {
   n_basis_pre <- round(n_basis_cur * scale)
   n_features <- ncol(x)
   n_params <- n_basis_pre + n_features
-
-  if (n_basis_pre > object$n_basis_pre) {
-    idx <- c(
-      seq_len(object$n_basis_pre), n_basis_pre + seq_len(n_features)
-    )
-    theta_prev <- rep(0, n_params)
-    theta_prev[idx] <- object$theta_prev
-    hess_prev <- matrix(0, n_params, n_params)
-    hess_prev[idx, idx] <- object$hess_prev
-  } else {
-    theta_prev <- object$theta_prev
-    hess_prev <- object$hess_prev
-  }
 
   # The patients that are already stored and the new patients
   patients_stored <- names(time_stored)
@@ -180,10 +170,23 @@ update.coxstream <- function(object, data, n_basis = "auto", ...) {
   time <- time[sorted]
   delta <- delta[sorted]
 
+  if (n_basis_pre > object$n_basis_pre) {
+    idx <- c(
+      seq_len(object$n_basis_pre), n_basis_pre + seq_len(n_features)
+    )
+    theta_prev <- rep(0, n_params)
+    theta_prev[idx] <- object$theta_prev
+    hess_prev <- matrix(0, n_params, n_params)
+    hess_prev[idx, idx] <- object$hess_prev
+  } else {
+    theta_prev <- object$theta_prev
+    hess_prev <- object$hess_prev
+  }
+
   cur_idx <- c(seq_len(n_basis_cur), (n_basis_pre + 1):n_params)
   res <- trust::trust(
     objfun = objective, parinit = theta_prev[cur_idx], rinit = 1, rmax = 10,
-    x = x, time = time, delta = delta, 
+    x = x, time = time, delta = delta,
     n_basis = n_basis_cur, boundary = boundary,
     theta_prev = theta_prev[cur_idx], hess_prev = hess_prev[cur_idx, cur_idx],
     time_int = time_int
@@ -191,22 +194,31 @@ update.coxstream <- function(object, data, n_basis = "auto", ...) {
   if (!res$converged) {
     warning("The optimization did not converge.")
   }
+  object$logLik <- res$value
   theta_prev[cur_idx] <- res$argument
   object$theta_prev <- theta_prev
 
   res <- objective(
-    theta_prev, x, time, delta, n_basis_pre, boundary, theta_prev, 
+    theta_prev, x, time, delta, n_basis_pre, boundary, theta_prev,
     hess_prev, time_int
   )
   object$hess_prev <- res$hessian
 
-  if (n_basis_cur < n_basis_pre) {
-    object$theta_prev[(n_basis_cur + 1):n_basis_pre] <- 0
+  # Rescale the Hessian matrix if the number of basis functions has changed
+  if (n_basis_pre > object$n_basis_pre) {
+    idx <- (object$n_basis_pre+1):n_basis_pre
+    hess_scale <- n_samples / (n_samples - object$n_samples)
+    w <- matrix(1, n_params, n_params)
+    w[idx, 1:n_params] <- hess_scale
+    w[1:n_params, idx] <- hess_scale
+    object$hess_prev <- object$hess_prev * w
   }
+
   coef_names <- c(paste0("Basis ", seq_len(n_basis_pre)), colnames(x))
   names(object$theta_prev) <- coef_names
   colnames(object$hess_prev) <- rownames(object$hess_prev) <- coef_names
 
+  object$n_samples <- n_samples
   object$time_stored <- time_stored
   object$time_unique <- time_unique
   object$n_basis_cur <- n_basis_cur
