@@ -108,39 +108,38 @@ basehaz_hess <- function(t, y, parms) {
 }
 
 objective <- function(
-    theta, x, time, delta, n_basis_cur, n_basis_pre, boundary,
-    theta_prev, hess_prev, time_int) {
+    theta, x, time, delta, n_basis, boundary, theta_prev, hess_prev, time_int) {
   n_params <- length(theta)
 
-  alpha <- c(theta[seq_len(n_basis_cur)], rep(0, n_basis_pre - n_basis_cur))
-  beta <- theta[(n_basis_pre + 1):n_params]
-  parms <- list(alpha = alpha, n_basis = n_basis_pre, boundary = boundary)
+  alpha <- theta[seq_len(n_basis)]
+  beta <- theta[(n_basis + 1):n_params]
+  parms <- list(alpha = alpha, n_basis = n_basis, boundary = boundary)
 
   loss1 <- (theta - theta_prev) %*% hess_prev %*% (theta - theta_prev) / 2
   grad1 <- as.vector(hess_prev %*% (theta - theta_prev))
   hess1 <- hess_prev
 
   u <- unique(time)
-  b_uniq <- chebyshev(u, n_basis_pre, boundary)
+  b_uniq <- chebyshev(u, n_basis, boundary)
   b <- b_uniq[match(time, u), ]
   cbh_uniq <- as.matrix(deSolve::ode(
     y = 0, times = c(0, u), func = basehaz_ode, parms = parms, method = "ode45"
   ))[-1, -1, drop = FALSE]
   cbh <- cbh_uniq[match(time, u), , drop = FALSE]
   dcbh_uniq <- as.matrix(deSolve::ode(
-    y = rep(0, n_basis_pre), times = c(0, u), func = basehaz_grad,
+    y = rep(0, n_basis), times = c(0, u), func = basehaz_grad,
     parms = parms, method = "ode45"
   ))[-1, -1, drop = FALSE]
   dcbh <- dcbh_uniq[match(time, u), , drop = FALSE]
   d2cbh_uniq <- as.matrix(deSolve::ode(
-    y = rep(0, n_basis_pre**2), times = c(0, u), func = basehaz_hess,
+    y = rep(0, n_basis**2), times = c(0, u), func = basehaz_hess,
     parms = parms, method = "ode45"
   ))[-1, -1, drop = FALSE]
   d2cbh <- d2cbh_uniq[match(time, u), , drop = FALSE]
   eta <- x %*% beta
   dalpha <- t(dcbh) %*% exp(eta) - t(b) %*% delta
   dbeta <- t(x) %*% (cbh * exp(eta) - delta)
-  d2alpha <- matrix(colSums(sweep(d2cbh, 1, exp(eta), "*")), n_basis_pre)
+  d2alpha <- matrix(colSums(sweep(d2cbh, 1, exp(eta), "*")), n_basis)
   d2beta <- t(x) %*% (as.vector(cbh * exp(eta)) * x)
   dalph_dabeta <- t(dcbh) %*% (as.vector(exp(eta)) * x)
 
@@ -159,12 +158,12 @@ objective <- function(
     ))[-1, -1, drop = FALSE]
     cbh_int <- cbh_int_uniq[match(time_int, u_int), , drop = FALSE]
     dcbh_int_uniq <- as.matrix(deSolve::ode(
-      y = rep(0, n_basis_pre), times = c(0, u_int), func = basehaz_grad,
+      y = rep(0, n_basis), times = c(0, u_int), func = basehaz_grad,
       parms = parms, method = "ode45"
     ))[-1, -1, drop = FALSE]
     dcbh_int <- dcbh_int_uniq[match(time_int, u_int), , drop = FALSE]
     d2cbh_int_uniq <- as.matrix(deSolve::ode(
-      y = rep(0, n_basis_pre**2), times = c(0, u_int), func = basehaz_hess,
+      y = rep(0, n_basis**2), times = c(0, u_int), func = basehaz_hess,
       parms = parms, method = "ode45"
     ))[-1, -1, drop = FALSE]
     d2cbh_int <- d2cbh_int_uniq[match(time_int, u_int), , drop = FALSE]
@@ -174,7 +173,7 @@ objective <- function(
     dalpha <- t(dcbh_int) %*% exp(eta_int)
     dbeta <- t(x_int) %*% (cbh_int * exp(eta_int))
     d2alpha_int <- matrix(
-      colSums(sweep(d2cbh_int, 1, exp(eta_int), "*")), n_basis_pre
+      colSums(sweep(d2cbh_int, 1, exp(eta_int), "*")), n_basis
     )
     d2beta_int <- t(x_int) %*% (as.vector(cbh_int * exp(eta_int)) * x_int)
     dalph_dabeta_int <- t(dcbh_int) %*% (as.vector(exp(eta_int)) * x_int)

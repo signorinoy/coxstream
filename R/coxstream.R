@@ -61,22 +61,27 @@ coxstream <- function(
   hess_prev <- matrix(0, n_params, n_params)
   time_int <- c()
 
+  cur_idx <- c(seq_len(n_basis_cur), (n_basis_pre + 1):n_params)
   res <- trust::trust(
-    objfun = objective, parinit = theta_prev, rinit = 1, rmax = 10,
-    x = x, time = time, delta = delta,
-    n_basis_cur = n_basis_cur, n_basis_pre = n_basis_pre, boundary = boundary,
-    theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int
+    objfun = objective, parinit = theta_prev[cur_idx], rinit = 1, rmax = 10,
+    x = x, time = time, delta = delta, 
+    n_basis = n_basis_cur, boundary = boundary,
+    theta_prev = theta_prev[cur_idx], hess_prev = hess_prev[cur_idx, cur_idx],
+    time_int = time_int
   )
   if (!res$converged) {
     warning("The optimization did not converge.")
   }
+  theta_prev[cur_idx] <- res$argument
+  res <- objective(
+    theta_prev, x, time, delta, n_basis_pre, boundary, theta_prev, 
+    hess_prev, time_int
+  )
   loss <- res$value
-  coef <- res$argument
   hess <- res$hessian
 
-  if (n_basis_cur < n_basis_pre) coef[(n_basis_cur + 1):n_basis_pre] <- 0
   coef_names <- c(paste0("Basis ", seq_len(n_basis_pre)), colnames(x))
-  names(coef) <- coef_names
+  names(theta_prev) <- coef_names
   colnames(hess) <- rownames(hess) <- coef_names
 
   fit <- list(
@@ -84,7 +89,7 @@ coxstream <- function(
     n_basis_pre = n_basis_pre,
     boundary = boundary,
     logLik = loss,
-    theta_prev = coef,
+    theta_prev = theta_prev,
     hess_prev = hess,
     time_stored = time_stored,
     time_unique = time_unique,
@@ -175,16 +180,24 @@ update.coxstream <- function(object, data, n_basis = "auto", ...) {
   time <- time[sorted]
   delta <- delta[sorted]
 
+  cur_idx <- c(seq_len(n_basis_cur), (n_basis_pre + 1):n_params)
   res <- trust::trust(
-    objfun = objective, parinit = theta_prev, rinit = 1, rmax = 10,
-    x = x, time = time, delta = delta,
-    n_basis_cur = n_basis_cur, n_basis_pre = n_basis_pre, boundary = boundary,
-    theta_prev = theta_prev, hess_prev = hess_prev, time_int = time_int
+    objfun = objective, parinit = theta_prev[cur_idx], rinit = 1, rmax = 10,
+    x = x, time = time, delta = delta, 
+    n_basis = n_basis_cur, boundary = boundary,
+    theta_prev = theta_prev[cur_idx], hess_prev = hess_prev[cur_idx, cur_idx],
+    time_int = time_int
   )
   if (!res$converged) {
     warning("The optimization did not converge.")
   }
-  object$theta_prev <- res$argument
+  theta_prev[cur_idx] <- res$argument
+  object$theta_prev <- theta_prev
+
+  res <- objective(
+    theta_prev, x, time, delta, n_basis_pre, boundary, theta_prev, 
+    hess_prev, time_int
+  )
   object$hess_prev <- res$hessian
 
   if (n_basis_cur < n_basis_pre) {
