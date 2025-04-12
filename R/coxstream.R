@@ -459,16 +459,18 @@ basehaz.coxstream <- function(
 #' cross-validation. Default is 10.
 #' @param n_alphas A positive integer specifying the number of alpha values to
 #' test. Default is 5
+#' @param n_basis_min A positive integer specifying the minimum number of
+#' basis functions. Default is 3.
 #' @param seed An integer specifying the random seed for reproducibility.
 #' Default is 0.
 #' @return An object of class \code{cv.coxstream} is returned.
 #' @export
 cv.coxstream <- function(
     formula, data, boundary, idx_col,
-    nu = 0.2, n_folds = 10, n_alphas = 5, seed = 0) {
+    nu = 0.2, n_folds = 10, n_alphas = 5, n_basis_min = 3, seed = 0) {
   set.seed(seed)
   folds <- sample(seq_len(n_folds), nrow(data), replace = TRUE)
-  n_basises <- seq_len(n_alphas) + 1
+  n_basises <- seq_len(n_alphas) + n_basis_min - 1
 
   cv_score <- matrix(0, nrow = n_alphas, ncol = n_folds)
   for (fold in seq_len(n_folds)) {
