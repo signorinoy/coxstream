@@ -38,17 +38,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">coxstream</span><span class="op">(</span></span>
-<span>  <span class="va">formula</span>,</span>
-<span>  <span class="va">data</span>,</span>
-<span>  <span class="va">n_basis</span>,</span>
-<span>  <span class="va">boundary</span>,</span>
-<span>  <span class="va">idx_col</span>,</span>
-<span>  scale <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  alpha <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  nu <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  <span class="va">...</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">coxstream</span><span class="op">(</span><span class="va">formula</span>, <span class="va">data</span>, <span class="va">n_basis</span>, <span class="va">boundary</span>, <span class="va">subject_col</span>, scale <span class="op">=</span> <span class="fl">2</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -73,7 +63,7 @@ returned by the <code><a href="Surv.html">Surv</a></code> function.</p></dd>
 <dd><p>A vector of length 2 containing the boundary knots.</p></dd>
 
 
-<dt id="arg-idx-col">idx_col<a class="anchor" aria-label="anchor" href="#arg-idx-col"></a></dt>
+<dt id="arg-subject-col">subject_col<a class="anchor" aria-label="anchor" href="#arg-subject-col"></a></dt>
 <dd><p>The column name of the index column, which is used to
 distinguish different patients.</p></dd>
 
@@ -82,56 +72,99 @@ distinguish different patients.</p></dd>
 <dd><p>The scaling factor for the pre-estimated coefficients.</p></dd>
 
 
-<dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
-<dd><p>A numeric value used to calculate the number of basis functions.
-Default is 2.0.</p></dd>
-
-
-<dt id="arg-nu">nu<a class="anchor" aria-label="anchor" href="#arg-nu"></a></dt>
-<dd><p>A numeric value used to calculate the number of basis functions.
-Default is 0.2.</p></dd>
-
-
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments (not used).</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An object of class <code>coxstream</code> is returned.</p>
+    <p>Additional arguments passed to the optimization function.</p>
+<p>An object of class <code>coxstream</code> containing the fitted model.
+The object contains the following components:</p><dl><dt>logLik</dt>
+<dd><p>The log-likelihood of the fitted model.</p></dd>
+
+<dt>theta</dt>
+<dd><p>The estimated coefficients.</p></dd>
+
+<dt>hessian</dt>
+<dd><p>The Hessian matrix of the fitted model.</p></dd>
+
+<dt>n_basis</dt>
+<dd><p>The number of basis functions used.</p></dd>
+
+<dt>n_features</dt>
+<dd><p>The number of features in the model.</p></dd>
+
+<dt>n_samples</dt>
+<dd><p>The number of samples in the model.</p></dd>
+
+<dt>formula</dt>
+<dd><p>The formula used to fit the model.</p></dd>
+
+<dt>boundary</dt>
+<dd><p>The boundary knots used in the model.</p></dd>
+
+<dt>subject_col</dt>
+<dd><p>The index column used to distinguish different
+patients.</p></dd>
+
+<dt>scale</dt>
+<dd><p>The scaling factor used in the model.</p></dd>
+
+<dt>time_stored</dt>
+<dd><p>The survival times stored for each patient.</p></dd>
+
+<dt>call</dt>
+<dd><p>The matched call.</p></dd>
+
+
+</dl></div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Fits a streaming Cox proportional hazards model that accommodates repeated
+observations for subjects.</p>
+<p>This function employs the <code>nlm</code> optimization method to estimate
+the model parameters. If the optimization fails to converge, an error is
+raised. During the pre-estimation stage, parameters are projected to
+mitigate bias introduced in the early stage.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="update.coxstream.html">update.coxstream</a></code>, <code><a href="summary.coxstream.html">summary.coxstream</a></code>.</p></div>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/SignorinoY/coxstream" class="external-link">coxstream</a></span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">formula</span> <span class="op">&lt;-</span> <span class="fu"><a href="Surv.html">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span> <span class="op">+</span> <span class="va">X3</span> <span class="op">+</span> <span class="va">X4</span> <span class="op">+</span> <span class="va">X5</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">formula</span> <span class="op">&lt;-</span> <span class="fu"><a href="Surv.html">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span> <span class="op">+</span> <span class="va">X3</span> <span class="op">+</span> <span class="va">X4</span> <span class="op">+</span> <span class="va">X5</span></span></span>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">coxstream</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">formula</span>, <span class="va">sim</span><span class="op">[</span><span class="va">sim</span><span class="op">$</span><span class="va">batch_id</span> <span class="op">==</span> <span class="fl">1</span>, <span class="op">]</span>,</span></span>
-<span class="r-in"><span>  n_basis <span class="op">=</span> <span class="fl">3</span>, boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span>, idx_col <span class="op">=</span> <span class="st">"patient_id"</span></span></span>
+<span class="r-in"><span>  n_basis <span class="op">=</span> <span class="fl">5</span>, boundary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span>, subject_col <span class="op">=</span> <span class="st">"patient_id"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="kw">for</span> <span class="op">(</span><span class="va">batch</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">sim</span><span class="op">[</span><span class="va">sim</span><span class="op">$</span><span class="va">batch_id</span> <span class="op">==</span> <span class="va">batch</span>, <span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> coxstream(formula = formula, data = sim[sim$batch_id == 1, ], </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     n_basis = 3, boundary = c(0, 3), idx_col = "patient_id")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> update.coxstream(object = fit, newdata = sim[sim$batch_id == </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     batch, ])</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Number of basis:  7 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Number of basis functions:  5 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       coef exp(coef)      se     z      p    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X1 0.98906   2.68871 0.05125 19.30 &lt;2e-16 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X2 1.01026   2.74631 0.05365 18.83 &lt;2e-16 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X3 1.01101   2.74836 0.05432 18.61 &lt;2e-16 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X4 0.89229   2.44070 0.05205 17.14 &lt;2e-16 ***</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X5 1.03615   2.81834 0.05107 20.29 &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X1 0.99023   2.69186 0.05042 19.64 &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X2 1.02152   2.77742 0.05334 19.15 &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X3 1.01102   2.74841 0.05337 18.94 &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X4 0.89143   2.43861 0.05173 17.23 &lt;2e-16 ***</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X5 1.03534   2.81607 0.05054 20.48 &lt;2e-16 ***</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    exp(coef) exp(-coef) lower .95 upper .95</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X1 2.6887    0.3719     2.4317    2.9728   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X2 2.7463    0.3641     2.4722    3.0508   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X3 2.7484    0.3639     2.4708    3.0571   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X4 2.4407    0.4097     2.2040    2.7029   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> X5 2.8183    0.3548     2.5499    3.1150   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X1 2.6919    0.3715     2.4386    2.9714   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X2 2.7774    0.3600     2.5017    3.0835   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X3 2.7484    0.3638     2.4754    3.0515   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X4 2.4386    0.4101     2.2035    2.6988   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> X5 2.8161    0.3551     2.5505    3.1093   </span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -143,7 +176,7 @@ Default is 0.2.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
     </footer></div>
