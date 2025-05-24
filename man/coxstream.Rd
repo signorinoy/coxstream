@@ -4,17 +4,7 @@
 \alias{coxstream}
 \title{Streaming Cox model with repeated observations}
 \usage{
-coxstream(
-  formula,
-  data,
-  n_basis,
-  boundary,
-  idx_col,
-  scale = 2,
-  alpha = 2,
-  nu = 0.2,
-  ...
-)
+coxstream(formula, data, n_basis, boundary, subject_col, scale = 2, ...)
 }
 \arguments{
 \item{formula}{A formula expression as for regression models, of the form
@@ -27,34 +17,58 @@ returned by the \code{\link{Surv}} function.}
 
 \item{boundary}{A vector of length 2 containing the boundary knots.}
 
-\item{idx_col}{The column name of the index column, which is used to
+\item{subject_col}{The column name of the index column, which is used to
 distinguish different patients.}
 
 \item{scale}{The scaling factor for the pre-estimated coefficients.}
 
-\item{alpha}{A numeric value used to calculate the number of basis functions.
-Default is 2.0.}
-
-\item{nu}{A numeric value used to calculate the number of basis functions.
-Default is 0.2.}
-
 \item{...}{Additional arguments (not used).}
 }
 \value{
-An object of class \code{coxstream} is returned.
+Additional arguments passed to the optimization function.
+
+An object of class \code{coxstream} containing the fitted model.
+The object contains the following components:
+\describe{
+\item{logLik}{The log-likelihood of the fitted model.}
+\item{theta}{The estimated coefficients.}
+\item{hessian}{The Hessian matrix of the fitted model.}
+\item{n_basis}{The number of basis functions used.}
+\item{n_features}{The number of features in the model.}
+\item{n_samples}{The number of samples in the model.}
+\item{formula}{The formula used to fit the model.}
+\item{boundary}{The boundary knots used in the model.}
+\item{subject_col}{The index column used to distinguish different
+patients.}
+\item{scale}{The scaling factor used in the model.}
+\item{time_stored}{The survival times stored for each patient.}
+\item{call}{The matched call.}
+}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }
+\details{
+Fits a streaming Cox proportional hazards model that accommodates repeated
+observations for subjects.
+
+This function employs the \code{nlm} optimization method to estimate
+the model parameters. If the optimization fails to converge, an error is
+raised. During the pre-estimation stage, parameters are projected to
+mitigate bias introduced in the early stage.
+}
 \examples{
-library(coxstream)
 formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 fit <- coxstream(
   formula, sim[sim$batch_id == 1, ],
-  n_basis = 3, boundary = c(0, 3), idx_col = "patient_id"
+  n_basis = 5, boundary = c(0, 3), subject_col = "patient_id"
 )
 for (batch in 2:10) {
   fit <- update(fit, sim[sim$batch_id == batch, ])
 }
 summary(fit)
+
+}
+\seealso{
+\code{\link{update.coxstream}}, \code{\link{summary.coxstream}}.
 }

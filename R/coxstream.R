@@ -1,229 +1,288 @@
+#' @title Alias for Survival Function
+#' @description This function creates an alias for the `Surv` function from the
+#' `survival` package, allowing it to be used without explicitly referencing
+#' the package namespace.
+#'
+#' @param time The follow-up time for the subject.
+#' @param time2 The ending time for the interval (if applicable).
+#' @param event The status indicator, normally 0=alive, 1=dead.
+#'              Other values are allowed.
+#' @param type Character string specifying the type of censoring.
+#'             Possible values are "right", "left", "interval", or "counting".
+#' @param origin The origin for counting time, used when `type = "counting"`.
+#'
+#' @return A `Surv` object representing the survival data.
+#'
+#' @importFrom survival Surv
+#' @seealso \code{\link[survival]{Surv}}
+#' @export
+Surv <- survival::Surv # nolint: object_name_linter.
+
 #' Streaming Cox model with repeated observations
 #'
 #' `r lifecycle::badge('experimental')`
+#'
+#' Fits a streaming Cox proportional hazards model that accommodates repeated
+#' observations for subjects.
+#'
 #' @param formula A formula expression as for regression models, of the form
 #' \code{response ~ predictors}. The response must be a survival object as
 #' returned by the \code{\link{Surv}} function.
 #' @param data A data frame containing the variables in the model.
 #' @param n_basis A positive integer specifying the number of basis functions.
 #' @param boundary A vector of length 2 containing the boundary knots.
-#' @param idx_col The column name of the index column, which is used to
+#' @param subject_col The column name of the index column, which is used to
 #' distinguish different patients.
 #' @param scale The scaling factor for the pre-estimated coefficients.
-#' @param alpha A numeric value used to calculate the number of basis functions.
-#' Default is 2.0.
-#' @param nu A numeric value used to calculate the number of basis functions.
-#' Default is 0.2.
 #' @param ... Additional arguments (not used).
-#' @return An object of class \code{coxstream} is returned.
-#' @export
+#' @return Additional arguments passed to the optimization function.
+#'
+#' @return An object of class \code{coxstream} containing the fitted model.
+#' The object contains the following components:
+#' \describe{
+#'   \item{logLik}{The log-likelihood of the fitted model.}
+#'   \item{theta}{The estimated coefficients.}
+#'   \item{hessian}{The Hessian matrix of the fitted model.}
+#'   \item{n_basis}{The number of basis functions used.}
+#'   \item{n_features}{The number of features in the model.}
+#'   \item{n_samples}{The number of samples in the model.}
+#'   \item{formula}{The formula used to fit the model.}
+#'   \item{boundary}{The boundary knots used in the model.}
+#'   \item{subject_col}{The index column used to distinguish different
+#'                       patients.}
+#'   \item{scale}{The scaling factor used in the model.}
+#'   \item{time_stored}{The survival times stored for each patient.}
+#'   \item{call}{The matched call.}
+#' }
+#'
+#' @details This function employs the `nlm` optimization method to estimate
+#'   the model parameters. If the optimization fails to converge, an error is
+#'   raised. During the pre-estimation stage, parameters are projected to
+#'   mitigate bias introduced in the early stage.
 #'
 #' @examples
-#' library(coxstream)
 #' formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
 #' fit <- coxstream(
 #'   formula, sim[sim$batch_id == 1, ],
-#'   n_basis = 3, boundary = c(0, 3), idx_col = "patient_id"
+#'   n_basis = 5, boundary = c(0, 3), subject_col = "patient_id"
 #' )
 #' for (batch in 2:10) {
 #'   fit <- update(fit, sim[sim$batch_id == batch, ])
 #' }
 #' summary(fit)
+#'
+#' @seealso \code{\link{update.coxstream}}, \code{\link{summary.coxstream}}.
+#'
+#' @importFrom stats model.frame model.matrix model.response nlm
+#'
+#' @export
 coxstream <- function(
-    formula, data, n_basis, boundary, idx_col,
-    scale = 2, alpha = 2.0, nu = 0.2, ...) {
-  if (n_basis %% 1 != 0 || n_basis < 1) {
-    stop("The number of basis functions must be an positive integer.")
+    formula, data, n_basis, boundary, subject_col, scale = 2.0, ...) {
+  # Input validation
+  if (!inherits(formula, "formula")) stop("formula must be a formula object")
+  if (!inherits(data, "data.frame")) stop("data must be a data frame")
+  if (!is.numeric(n_basis) || length(n_basis) != 1 || n_basis <= 0) {
+    stop("n_basis must be a positive integer")
   }
+  if (
+    !is.numeric(boundary) || length(boundary) != 2 || boundary[1] >= boundary[2]
+  ) {
+    stop("boundary must be a numeric vector of length 2 with increasing values")
+  }
+  if (!is.data.frame(data) || !all(subject_col %in% colnames(data))) {
+    stop("subject_col must be a column name in the data frame")
+  }
+  if (!is.numeric(scale) || length(scale) != 1 || scale <= 0) {
+    stop("scale must be a positive numeric value")
+  }
+
+  # Prepare model frame and extract response and predictors
   mf <- stats::model.frame(formula, data)
   y <- stats::model.response(mf)
-  time <- y[, 1]
-  delta <- y[, 2]
-  names(time) <- names(delta) <- data[[idx_col]]
+  time <- y[, 1, drop = FALSE]
+  status <- y[, 2, drop = FALSE]
   x <- stats::model.matrix(formula, data)[, -1]
-  rownames(x) <- data[[idx_col]]
+  subject <- data[[subject_col]]
 
-  n_samples <- nrow(x)
-  # Store the survival times for each patient
-  time_stored <- sort(time[delta == 0])
-  time_unique <- unique(time)
-
-  sorted <- order(time)
-  x <- x[sorted, ]
-  time <- time[sorted]
-  delta <- delta[sorted]
-
-  n_basis_cur <- n_basis
-  n_basis_pre <- round(n_basis * scale)
-
+  # Initialize parameters
+  n_observations <- nrow(data)
   n_features <- ncol(x)
-  n_params <- n_features + n_basis_pre
-  theta_prev <- numeric(n_params)
-  hess_prev <- matrix(0, n_params, n_params)
+
+  n_basis_pre <- round(n_basis * scale)
+  n_parameters <- n_features + n_basis_pre
+
+  # Store the survival times for each patient
+  time_stored <- tapply(time, subject, max, na.rm = TRUE)
+  is_event <- tapply(status, subject, max, na.rm = TRUE)
+  time_stored <- time_stored[!subject[is_event == 1] %in% names(time_stored)]
+
+  # Initialize the Parameters
+  theta_init <- numeric(n_basis + n_features)
+  theta <- numeric(n_parameters)
+  hess <- matrix(0, n_parameters, n_parameters)
   time_int <- c()
 
-  cur_idx <- c(seq_len(n_basis_cur), (n_basis_pre + 1):n_params)
-  res <- trust::trust(
-    objfun = objective, parinit = theta_prev[cur_idx], rinit = 1, rmax = 10,
-    x = x, time = time, delta = delta,
-    n_basis = n_basis_cur, boundary = boundary,
-    theta_prev = theta_prev[cur_idx], hess_prev = hess_prev[cur_idx, cur_idx],
-    time_int = time_int
+  ## 1. Dynamic Activation Stage
+  res <- nlm(
+    f = objective, p = theta_init,
+    time = time, status = status, x = x, subject = subject,
+    boundary = boundary, theta_prev = theta, hess_prev = hess,
+    time_int = time_int, ...
   )
-  if (!res$converged) {
-    warning("The optimization did not converge.")
+  if (!res$code %in% c(1, 2, 3)) {
+    stop("Optimization failed to converge")
   }
-  theta_prev[cur_idx] <- res$argument
-  res <- objective(
-    theta_prev, x, time, delta, n_basis_pre, boundary, theta_prev,
-    hess_prev, time_int
+
+  # 2. Pre-estimation stage
+  prox <- prox_forward(n_basis, n_basis_pre, n_features)
+  theta <- as.vector(prox %*% res$estimate)
+  names(theta) <- c(paste0("Basis ", seq_len(n_basis_pre)), colnames(x))
+  obj <- objective(
+    theta, time, status, x, subject, boundary, theta, hess, time_int
   )
-  loss <- res$value
-  hess <- res$hessian
 
-  coef_names <- c(paste0("Basis ", seq_len(n_basis_pre)), colnames(x))
-  names(theta_prev) <- coef_names
-  colnames(hess) <- rownames(hess) <- coef_names
-
-  fit <- list(
-    n_basis_cur = n_basis_cur,
-    n_basis_pre = n_basis_pre,
-    boundary = boundary,
-    logLik = loss,
-    theta_prev = theta_prev,
-    hess_prev = hess,
-    n_samples = n_samples,
-    time_stored = time_stored,
-    time_unique = time_unique,
+  object <- list(
+    logLik = as.numeric(-obj),
+    theta = theta,
+    hessian = attr(obj, "hessian"),
+    n_basis = c(n_basis),
+    n_features = n_features,
+    n_observations = n_observations,
     formula = formula,
-    idx_col = idx_col,
-    alpha = alpha,
-    nu = nu,
+    boundary = boundary,
+    subject_col = subject_col,
     scale = scale,
+    time_stored = time_stored,
     call = match.call()
   )
-  class(fit) <- "coxstream"
-  fit
+  class(object) <- "coxstream"
+  object
 }
 
 #' Update the \code{coxstream} with new data.
 #'
 #' `r lifecycle::badge('experimental')`
+#'
+#' This function updates the \code{coxstream} object with new data, allowing
+#' the dynamic activation of the newly added spline basis functions.
+#'
 #' @param object A \code{coxstream} object.
-#' @param data A data frame containing the variables in the model.
-#' @param n_basis Either a positive integer specifying the number of basis
-#' functions, or the string "auto" to automatically determine this number based
-#' \eqn{[\alpha N^{\nu}]}, where \eqn{N} is the number of unique survival times.
-#' @param ... Additional arguments (not used).
+#' @param newdata A \code{data.frame} containing the new data to update the
+#'   model. It must include the variables specified in the original model
+#'   formula.
+#' @param n_basis Either a numeric value specifying the number of basis
+#'   functions or \code{"auto"} to automatically determine the number of basis
+#'   functions based on the sample size and scaling parameters.
+#'   Defaults to \code{"auto"}, which means the number of basis functions will
+#'   be determined by n_basis = round(alpha * n_samples^nu).
+#' @param alpha A positive numeric value controlling the growth rate of the
+#'   number of basis functions when \code{n_basis = "auto"}. Defaults to 1.0.
+#' @param nu A positive numeric value controlling the scaling exponent for
+#'   determining the number of basis functions when \code{n_basis = "auto"}.
+#'   Defaults to 0.2.
+#' @param ... Additional arguments passed to the optimization function.
+#'
+#' @details
 #'
 #' @return An object of class \code{coxstream}.
+#'
+#' @importFrom stats update
+#' @importFrom stats model.frame model.response model.matrix nlm
+#' @importFrom utils tail
+#'
 #' @export
-update.coxstream <- function(object, data, n_basis = "auto", ...) {
+update.coxstream <- function(
+    object, newdata, n_basis = "auto", alpha = 1.0, nu = 0.2, ...) {
+  if (!inherits(object, "coxstream")) {
+    stop("object must be of class 'coxstream'")
+  }
+  if (!inherits(newdata, "data.frame")) stop("newdata must be a data frame")
+  if (!is.numeric(n_basis) && n_basis != "auto") {
+    stop("n_basis must be numeric or 'auto'")
+  }
+  if (!is.numeric(alpha) || length(alpha) != 1 || alpha <= 0) {
+    stop("alpha must be a positive numeric value")
+  }
+  if (!is.numeric(nu) || length(nu) != 1 || nu <= 0) {
+    stop("nu must be a positive numeric value")
+  }
+
+  # Retrieve Parameters
+  theta <- object$theta
+  hess <- object$hessian
+
+  n_observations <- object$n_observations
+  n_features <- object$n_features
+  n_basis_last <- tail(object$n_basis, 1)
+  n_basis_pre_last <- length(theta) - n_features
+
   formula <- object$formula
   boundary <- object$boundary
-  idx_col <- object$idx_col
   scale <- object$scale
+  subject_col <- object$subject_col
   time_stored <- object$time_stored
 
-  mf <- stats::model.frame(formula, data)
+  mf <- stats::model.frame(formula, newdata)
   y <- stats::model.response(mf)
-  time <- y[, 1]
-  delta <- y[, 2]
-  names(time) <- names(delta) <- data[[idx_col]]
-  x <- stats::model.matrix(formula, data)[, -1]
-  rownames(x) <- data[[idx_col]]
+  time <- y[, 1, drop = FALSE]
+  status <- y[, 2, drop = FALSE]
+  x <- stats::model.matrix(formula, newdata)[, -1]
+  subject <- newdata[[subject_col]]
 
-  n_samples <- object$n_samples + nrow(x)
-
-  time_unique <- unique(c(object$time_unique, time))
+  # Update Parameters
+  n_observations <- n_observations + nrow(x)
   if (n_basis == "auto") {
-    n_basis_cur <- max(
-      object$n_basis_cur, round(object$alpha * length(time_unique)^object$nu)
-    )
+    n_basis <- max(n_basis_last, round(alpha * n_observations^nu))
   } else if (is.numeric(n_basis)) {
-    n_basis_cur <- as.integer(n_basis)
+    n_basis <- max(n_basis_last, n_basis)
   } else {
-    stop("The n_basis must be an integer or 'auto'.")
+    stop("n_basis must be numeric or 'auto'")
   }
-  n_basis_pre <- round(n_basis_cur * scale)
-  n_features <- ncol(x)
-  n_params <- n_basis_pre + n_features
+  object$n_observations <- n_observations
+  object$n_basis <- c(object$n_basis, n_basis)
 
-  # The patients that are already stored and the new patients
-  patients_stored <- names(time_stored)
-  patients_int <- intersect(patients_stored, data[[idx_col]])
-  patients_new <- data[[idx_col]][!data[[idx_col]] %in% patients_int]
-  # Select the stored survival times that int with the new patients
-  time_int <- time_stored[patients_int]
-  # Update the stored survival times
-  time_stored[patients_int] <- time[patients_int]
-  # Select the survival patients in the inted stored survival times
-  delta_int <- delta[patients_int]
-  patients_remove <- names(delta_int[delta_int == 1])
-  time_stored <- time_stored[!names(time_stored) %in% patients_remove]
-  time_new <- time[data[[idx_col]] %in% patients_new & delta == 0]
-  time_stored <- c(time_stored, time_new)
-  time_stored <- sort(time_stored)
+  time_int <- time_stored[intersect(names(time_stored), subject)]
 
-  sorted <- order(time)
-  x <- x[sorted, ]
-  time <- time[sorted]
-  delta <- delta[sorted]
+  time_max <- tapply(time, subject, max, na.rm = TRUE)
+  is_event <- tapply(status, subject, max, na.rm = TRUE)
+  time_stored <- c(time_stored, time_max)
+  time_stored <- time_stored[!duplicated(names(time_stored), fromLast = TRUE)]
+  object$time_stored <- time_stored[
+    !names(time_stored) %in% subject[is_event == 1]
+  ]
 
-  if (n_basis_pre > object$n_basis_pre) {
-    idx <- c(
-      seq_len(object$n_basis_pre), n_basis_pre + seq_len(n_features)
-    )
-    theta_prev <- rep(0, n_params)
-    theta_prev[idx] <- object$theta_prev
-    hess_prev <- matrix(0, n_params, n_params)
-    hess_prev[idx, idx] <- object$hess_prev
-  } else {
-    theta_prev <- object$theta_prev
-    hess_prev <- object$hess_prev
+  ## 1. Dynamic Activation Stage
+  n_basis_pre <- round(n_basis * scale)
+  if (n_basis_pre > n_basis_pre_last) {
+    prox <- prox_forward(n_basis_pre_last, n_basis_pre, n_features)
+    theta <- as.vector(prox %*% theta)
+    prox_inv <- MASS::ginv(prox)
+    hess <- t(prox_inv) %*% hess %*% prox_inv
   }
-
-  cur_idx <- c(seq_len(n_basis_cur), (n_basis_pre + 1):n_params)
-  res <- trust::trust(
-    objfun = objective, parinit = theta_prev[cur_idx], rinit = 1, rmax = 10,
-    x = x, time = time, delta = delta,
-    n_basis = n_basis_cur, boundary = boundary,
-    theta_prev = theta_prev[cur_idx], hess_prev = hess_prev[cur_idx, cur_idx],
-    time_int = time_int
+  prox <- prox_forward(n_basis, n_basis_pre, n_features)
+  theta_init <- qr.solve(prox, theta)
+  res <- nlm(
+    f = objective, p = theta_init,
+    time = time, status = status, x = x, subject = subject,
+    boundary = boundary, theta_prev = theta, hess_prev = hess,
+    time_int = time_int, ...
   )
-  if (!res$converged) {
-    warning("The optimization did not converge.")
+  if (!res$code %in% c(1, 2, 3)) {
+    stop("Optimization failed to converge")
   }
-  object$logLik <- res$value
-  theta_prev[cur_idx] <- res$argument
-  object$theta_prev <- theta_prev
 
-  res <- objective(
-    theta_prev, x, time, delta, n_basis_pre, boundary, theta_prev,
-    hess_prev, time_int
+  # 2. Pre-estimation stage
+  prox <- prox_forward(n_basis, n_basis_pre, n_features)
+  theta <- as.vector(prox %*% res$estimate)
+  names(theta) <- c(paste0("Basis ", seq_len(n_basis_pre)), colnames(x))
+  obj <- objective(
+    theta, time, status, x, subject, boundary, theta, hess, time_int
   )
-  object$hess_prev <- res$hessian
 
-  # Rescale the Hessian matrix if the number of basis functions has changed
-  if (n_basis_pre > object$n_basis_pre) {
-    idx <- (object$n_basis_pre+1):n_basis_pre
-    hess_scale <- n_samples / (n_samples - object$n_samples)
-    w <- matrix(1, n_params, n_params)
-    w[idx, 1:n_params] <- hess_scale
-    w[1:n_params, idx] <- hess_scale
-    object$hess_prev <- object$hess_prev * w
-  }
-
-  coef_names <- c(paste0("Basis ", seq_len(n_basis_pre)), colnames(x))
-  names(object$theta_prev) <- coef_names
-  colnames(object$hess_prev) <- rownames(object$hess_prev) <- coef_names
-
-  object$n_samples <- n_samples
-  object$time_stored <- time_stored
-  object$time_unique <- time_unique
-  object$n_basis_cur <- n_basis_cur
-  object$n_basis_pre <- n_basis_pre
-  class(object) <- "coxstream"
+  object$logLik <- as.numeric(-obj)
+  object$theta <- theta
+  object$hessian <- attr(obj, "hessian")
+  object$call <- match.call()
   object
 }
 
@@ -236,16 +295,21 @@ update.coxstream <- function(object, data, n_basis = "auto", ...) {
 #' @export
 coef.coxstream <- function(object, ...) {
   if (!inherits(object, "coxstream")) {
-    stop("The object must be of class 'coxstream'.")
+    stop("object must be of class 'coxstream'")
   }
-  idx <- c(
-    seq_len(object$n_basis_cur),
-    (object$n_basis_pre + 1):length(object$theta_prev)
+  n_basis_pre <- length(object$theta) - object$n_features
+  n_basis <- tail(object$n_basis, 1)
+  prox <- prox_forward(n_basis, n_basis_pre, object$n_features)
+  theta <- qr.solve(prox, object$theta)
+
+  names(theta) <- c(
+    paste0("Basis ", seq_len(n_basis)),
+    names(object$theta[(n_basis_pre + 1):length(object$theta)])
   )
-  object$theta_prev[idx]
+  theta
 }
 
-#' Extract variance-covariance matrix from a \code{coxstream} bbject
+#' Extract variance-covariance matrix from a \code{coxstream} object
 #'
 #' @param object An object of class \code{coxstream}.
 #' @param ... Additional arguments (not unused).
@@ -257,12 +321,13 @@ vcov.coxstream <- function(object, ...) {
   if (!inherits(object, "coxstream")) {
     stop("The provided object must be of class 'coxstream'.")
   }
+  n_basis_pre <- length(object$theta) - object$n_features
+  n_basis <- tail(object$n_basis, 1)
+  prox <- prox_forward(n_basis, n_basis_pre, object$n_features)
 
-  idx <- c(
-    seq_len(object$n_basis_cur),
-    (object$n_basis_pre + 1):length(object$theta_prev)
-  )
-  solve(object$hess_prev[idx, idx])
+  hessian <- object$hessian
+  hess <- t(prox) %*% hessian %*% prox
+  solve(hess)
 }
 
 #' Summary method for \code{coxstream} object
@@ -312,7 +377,7 @@ summary.coxstream <- function(object, conf.int = 0.95, ...) {
 
   summary_list <- list(
     call = object$call, coefficients = coef_matrix, conf.int = conf_int_matrix,
-    n_basis_cur = object$n_basis_cur, boundary = object$boundary
+    n_basis = tail(object$n_basis, 1), boundary = object$boundary
   )
   class(summary_list) <- "summary.coxstream"
   return(summary_list)
@@ -341,28 +406,31 @@ summary.coxstream <- function(object, conf.int = 0.95, ...) {
 #'   \item \strong{Confidence intervals:} The exponentiated coefficients along
 #'         with their confidence intervals.
 #' }
+#'
+#' @importFrom stats printCoefmat
+#'
 #' @export
 print.summary.coxstream <- function(
     x, digits = max(3, getOption("digits") - 3),
     signif.stars = getOption("show.signif.stars"), ...) {
   cat("Call:\n")
   print(x$call)
-  cat("\n")
-  cat("Number of basis: ", x$n_basis_cur, "\n")
+  cat("\nNumber of basis functions: ", x$n_basis, "\n\n")
 
-  n_basis <- x$n_basis_cur
-  stats::printCoefmat(x$coefficients[(n_basis + 1):nrow(x$coefficients), ],
+  idx <- !grepl("^Basis", rownames(x$coefficients))
+  printCoefmat(
+    x$coefficients[idx, ],
     digits = digits, signif.stars = signif.stars,
     cs.ind = 1:3, tst.ind = 4, P.values = TRUE, has.Pvalue = TRUE
   )
-
   print(
-    format(x$conf.int[(n_basis + 1):nrow(x$conf.int), ], digits = digits),
+    format(x$conf.int[idx, ], digits = digits),
     quote = FALSE
   )
 
   invisible(x)
 }
+
 
 #' Prediction method for \code{coxtrans} objects.
 #' @param object An object of class \code{coxtrans}.
@@ -418,7 +486,7 @@ basehaz.coxstream <- function(
     stop("object must be of class 'coxstream'")
   }
 
-  n_basis <- object$n_basis_cur
+  n_basis <- tail(object$n_basis, 1)
   boundary <- object$boundary
 
   if (!is.null(newdata)) {
@@ -426,18 +494,18 @@ basehaz.coxstream <- function(
   } else {
     time <- seq.int(boundary[1], boundary[2], length.out = 100)
   }
-  alpha <- object$theta_prev[seq_len(n_basis)]
+  alpha <- coef(object)[seq_len(n_basis)]
   parms <- list(alpha = alpha, n_basis = n_basis, boundary = boundary)
 
   u <- unique(time)
-  b_pre <- chebyshev(u, n_basis, boundary)
-  b <- b_pre[match(time, u), ]
-  cbh_pre <- as.matrix(deSolve::ode(
+  b_uniq <- bernstein(u, n_basis, boundary)
+  b <- b_uniq[match(time, u), ]
+  cbh_uniq <- as.matrix(deSolve::ode(
     y = 0, times = c(0, u), func = basehaz_ode, parms = parms, method = "ode45"
   ))[-1, -1, drop = FALSE]
-  cbh <- cbh_pre[match(time, u), , drop = FALSE]
+  cbh <- cbh_uniq[match(time, u), , drop = FALSE]
 
-  vcov_alpha <- vcov(object)[1:n_basis, 1:n_basis]
+  vcov_alpha <- vcov(object)[seq_len(n_basis), seq_len(n_basis)]
   vcov_lp <- b %*% vcov_alpha %*% t(b)
   vcov_basehaz <- diag(as.vector(cbh^2)) %*% vcov_lp
   se_basehaz <- sqrt(diag(vcov_basehaz))
@@ -455,72 +523,4 @@ basehaz.coxstream <- function(
     )
   )
   basehaz_matrix
-}
-
-#' Cross-validation for \code{coxstream} objects
-#' @param formula A formula expression as for regression models, of the form
-#' \code{response ~ predictors}. The response must be a survival object as
-#' returned by the \code{\link{Surv}} function.
-#' @param data A data frame containing the variables in the model.
-#' @param boundary A vector of length 2 containing the boundary knots.
-#' @param idx_col The column name of the index column, which is used to
-#' distinguish different patients.
-#' @param nu A numeric value used to calculate the number of basis functions.
-#' Default is 0.2.
-#' @param n_folds A positive integer specifying the number of folds for
-#' cross-validation. Default is 10.
-#' @param n_alphas A positive integer specifying the number of alpha values to
-#' test. Default is 5
-#' @param n_basis_min A positive integer specifying the minimum number of
-#' basis functions. Default is 3.
-#' @param seed An integer specifying the random seed for reproducibility.
-#' Default is 0.
-#' @return An object of class \code{cv.coxstream} is returned.
-#' @export
-cv.coxstream <- function(
-    formula, data, boundary, idx_col,
-    nu = 0.2, n_folds = 10, n_alphas = 5, n_basis_min = 3, seed = 0) {
-  set.seed(seed)
-  folds <- sample(seq_len(n_folds), nrow(data), replace = TRUE)
-  n_basises <- seq_len(n_alphas) + n_basis_min - 1
-
-  cv_score <- matrix(0, nrow = n_alphas, ncol = n_folds)
-  for (fold in seq_len(n_folds)) {
-    data_train <- data[folds != fold, ]
-
-    data_test <- data[folds == fold, ]
-    y_test <- stats::model.response(stats::model.frame(formula, data_test))
-
-    for (i in seq_along(n_basises)) {
-      fit <- coxstream(
-        formula, data_train,
-        n_basis = n_basises[i],
-        boundary = boundary, idx_col = idx_col, scale = 1.0
-      )
-      df_test <- data.frame(
-        time = y_test[, 1], status = y_test[, 2],
-        pred = -predict(fit, newdata = data_test, type = "lp")
-      )
-      cv_score[i, fold] <-
-        concordance(Surv(time, status) ~ pred, df_test)$concordance
-    }
-  }
-  n_uniques <- length(unique(data$time)) * (n_folds - 1) / n_folds
-  alpha <- n_basises / n_uniques^nu
-  cvm <- apply(cv_score, 1, mean)
-  cvsd <- apply(cv_score, 1, stats::sd)
-  index <- c(which.max(cvm), which.max(cvm - cvsd))
-
-  object <- list(
-    alpha = alpha,
-    cvm = cvm,
-    cvsd = cvsd,
-    cvup = cvm + cvsd,
-    cvlo = cvm - cvsd,
-    nbasis = n_basises,
-    alpha.min = alpha[index[1]],
-    alpha.1se = alpha[index[2]]
-  )
-  class(object) <- "cv.coxstream"
-  object
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/coxstream.R
 \name{vcov.coxstream}
 \alias{vcov.coxstream}
-\title{Extract variance-covariance matrix from a \code{coxstream} bbject}
+\title{Extract variance-covariance matrix from a \code{coxstream} object}
 \usage{
 \method{vcov}{coxstream}(object, ...)
 }
@@ -16,5 +16,5 @@ A matrix representing the variance-covariance matrix of the
 coefficients.
 }
 \description{
-Extract variance-covariance matrix from a \code{coxstream} bbject
+Extract variance-covariance matrix from a \code{coxstream} object
 }

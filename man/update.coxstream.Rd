@@ -4,22 +4,37 @@
 \alias{update.coxstream}
 \title{Update the \code{coxstream} with new data.}
 \usage{
-\method{update}{coxstream}(object, data, n_basis = "auto", ...)
+\method{update}{coxstream}(object, newdata, n_basis = "auto", alpha = 1, nu = 0.2, ...)
 }
 \arguments{
 \item{object}{A \code{coxstream} object.}
 
-\item{data}{A data frame containing the variables in the model.}
+\item{newdata}{A \code{data.frame} containing the new data to update the
+model. It must include the variables specified in the original model
+formula.}
 
-\item{n_basis}{Either a positive integer specifying the number of basis
-functions, or the string "auto" to automatically determine this number based
-\eqn{[\alpha N^{\nu}]}, where \eqn{N} is the number of unique survival times.}
+\item{n_basis}{Either a numeric value specifying the number of basis
+functions or \code{"auto"} to automatically determine the number of basis
+functions based on the sample size and scaling parameters.
+Defaults to \code{"auto"}, which means the number of basis functions will
+be determined by n_basis = round(alpha * n_samples^nu).}
 
-\item{...}{Additional arguments (not used).}
+\item{alpha}{A positive numeric value controlling the growth rate of the
+number of basis functions when \code{n_basis = "auto"}. Defaults to 1.0.}
+
+\item{nu}{A positive numeric value controlling the scaling exponent for
+determining the number of basis functions when \code{n_basis = "auto"}.
+Defaults to 0.2.}
+
+\item{...}{Additional arguments passed to the optimization function.}
 }
 \value{
 An object of class \code{coxstream}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+}
+\details{
+This function updates the \code{coxstream} object with new data, allowing
+the dynamic activation of the newly added spline basis functions.
 }

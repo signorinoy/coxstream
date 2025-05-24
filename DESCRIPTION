@@ -14,11 +14,12 @@ Depends:
 Imports: 
     deSolve,
     lifecycle,
-    pracma,
+    MASS,
     stats,
-    survival,
-    trust
+    splines2,
+    survival
 Suggests: 
+    numDeriv,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Encoding: UTF-8
