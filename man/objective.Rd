@@ -51,6 +51,6 @@ The objective value with attributes "gradient" and "hessian".
 }
 \description{
 Computes the objective value, gradient, and Hessian for the penalized
-likelihood in the Cox model with a Bernstein polynomial bases baseline hazard. This
-function is designed for use in optimization routines.
+likelihood in the Cox model with a Bernstein polynomial bases baseline
+hazard. This function is designed for use in optimization routines.
 }

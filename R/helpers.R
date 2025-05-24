@@ -145,8 +145,8 @@ basehaz_hess <- function(t, y, parms) {
 #' Objective Function for Optimization
 #'
 #' Computes the objective value, gradient, and Hessian for the penalized
-#' likelihood in the Cox model with a Bernstein polynomial bases baseline hazard. This
-#' function is designed for use in optimization routines.
+#' likelihood in the Cox model with a Bernstein polynomial bases baseline
+#' hazard. This function is designed for use in optimization routines.
 #'
 #' @param par Numeric vector. Parameters to be optimized, including the
 #'   Bernstein polynomial coefficients of dimension \code{n_basis} (alpha)

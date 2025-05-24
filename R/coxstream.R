@@ -286,6 +286,52 @@ update.coxstream <- function(
   object
 }
 
+#' Compute Log-Likelihood for 'coxstream' Objects
+#'
+#' This function retrieves the log-likelihood value from an object of class
+#' 'coxstream'.
+#'
+#' @param object An object of class 'coxstream'.
+#' @param ... Additional arguments (currently unused).
+#'
+#' @return The log-likelihood value stored in the 'coxstream' object.
+#'
+#' @importFrom stats logLik
+#'
+#' @export
+logLik.coxstream <- function(object, ...) {
+  if (!inherits(object, "coxstream")) {
+    stop("object must be of class 'coxstream'")
+  }
+  object$logLik
+}
+
+#' Calculate the Akaike Information Criterion (AIC) for a 'coxstream' object
+#'
+#' This function computes the AIC for a given 'coxstream' object. The AIC is a
+#' measure of the relative quality of a statistical model for a given dataset.
+#' It is calculated as: \eqn{-2 * logLik + 2 * k}, where \code{k} is the number
+#' of parameters in the model.
+#'
+#' @param object An object of class \code{"coxstream"} for which the AIC is to
+#'   be calculated.
+#' @param ... Additional arguments (currently not used).
+#'
+#' @return A numeric value representing the AIC of the model.
+#'
+#' @importFrom stats AIC
+#'
+#' @seealso \code{\link{logLik.coxstream}}
+#'
+#' @export
+AIC.coxstream <- function(object, ...) {
+  if (!inherits(object, "coxstream")) {
+    stop("object must be of class 'coxstream'")
+  }
+  n_parameters <- tail(object$n_basis, 1) + object$n_features
+  -2 * logLik(object) + 2 * n_parameters
+}
+
 #' Extract the coefficients from a \code{coxstream} object
 #'
 #' @param object An object of class \code{coxstream}.
