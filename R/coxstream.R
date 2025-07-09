@@ -56,9 +56,8 @@ Surv <- survival::Surv # nolint: object_name_linter.
 #' }
 #'
 #' @details This function employs the `nlm` optimization method to estimate
-#'   the model parameters. If the optimization fails to converge, an error is
-#'   raised. During the pre-estimation stage, parameters are projected to
-#'   mitigate bias introduced in the early stage.
+#'   the model parameters. During the pre-estimation stage, parameters are
+#'   projected to mitigate bias introduced in the early stage.
 #'
 #' @examples
 #' formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
@@ -129,9 +128,6 @@ coxstream <- function(
     boundary = boundary, theta_prev = theta, hess_prev = hess,
     time_int = time_int, ...
   )
-  if (!res$code %in% c(1, 2, 3)) {
-    stop("Optimization failed to converge")
-  }
 
   # 2. Pre-estimation stage
   prox <- prox_forward(n_basis, n_basis_pre, n_features)
@@ -267,9 +263,6 @@ update.coxstream <- function(
     boundary = boundary, theta_prev = theta, hess_prev = hess,
     time_int = time_int, ...
   )
-  if (!res$code %in% c(1, 2, 3)) {
-    stop("Optimization failed to converge")
-  }
 
   # 2. Pre-estimation stage
   prox <- prox_forward(n_basis, n_basis_pre, n_features)

@@ -53,9 +53,8 @@ Fits a streaming Cox proportional hazards model that accommodates repeated
 observations for subjects.
 
 This function employs the \code{nlm} optimization method to estimate
-the model parameters. If the optimization fails to converge, an error is
-raised. During the pre-estimation stage, parameters are projected to
-mitigate bias introduced in the early stage.
+the model parameters. During the pre-estimation stage, parameters are
+projected to mitigate bias introduced in the early stage.
 }
 \examples{
 formula <- Surv(time, status) ~ X1 + X2 + X3 + X4 + X5
