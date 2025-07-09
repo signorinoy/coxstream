@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.4.3",
+    "Version": "4.5.1",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -9,9 +9,24 @@
     ]
   },
   "Packages": {
+    "MASS": {
+      "Package": "MASS",
+      "Version": "7.3-65",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "grDevices",
+        "graphics",
+        "methods",
+        "stats",
+        "utils"
+      ],
+      "Hash": "a41d0fc833ea756a1136b60a437efe26"
+    },
     "Matrix": {
       "Package": "Matrix",
-      "Version": "1.7-2",
+      "Version": "1.7-3",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -24,18 +39,43 @@
         "stats",
         "utils"
       ],
-      "Hash": "f6a81550f166acbe2cd5229e9ca079b9"
+      "Hash": "fb578c2b5d796882c60e9f770352f7c4"
+    },
+    "Rcpp": {
+      "Package": "Rcpp",
+      "Version": "1.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "methods",
+        "utils"
+      ],
+      "Hash": "0d3d8867aa41b0d9ad113b50c169ecb2"
+    },
+    "RcppArmadillo": {
+      "Package": "RcppArmadillo",
+      "Version": "14.6.0-1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "methods",
+        "stats",
+        "utils"
+      ],
+      "Hash": "1361fd84118452c8e80fe7b5201a8c03"
     },
     "cli": {
       "Package": "cli",
-      "Version": "3.6.4",
+      "Version": "3.6.5",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "utils"
       ],
-      "Hash": "491c34d3d9dd0d2fe13d9f278bb90795"
+      "Hash": "16850760556401a2eeb27d39bd11c9cb"
     },
     "deSolve": {
       "Package": "deSolve",
@@ -64,7 +104,7 @@
     },
     "lattice": {
       "Package": "lattice",
-      "Version": "0.22-6",
+      "Version": "0.22-7",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -75,7 +115,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "cc5ac1ba4c238c7ca9fa6a87ca11a7e2"
+      "Hash": "934f30aea6442867f57a610034ab06d3"
     },
     "lifecycle": {
       "Package": "lifecycle",
@@ -90,20 +130,6 @@
       ],
       "Hash": "b8552d117e1b808b09a832f589b79035"
     },
-    "pracma": {
-      "Package": "pracma",
-      "Version": "2.4.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "grDevices",
-        "graphics",
-        "stats",
-        "utils"
-      ],
-      "Hash": "44bc172d47d1ea0a638d9f299e321203"
-    },
     "renv": {
       "Package": "renv",
       "Version": "1.0.11",
@@ -116,14 +142,28 @@
     },
     "rlang": {
       "Package": "rlang",
-      "Version": "1.1.5",
+      "Version": "1.1.6",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "utils"
       ],
-      "Hash": "724dcc1490cd7071ee75ca2994a5446e"
+      "Hash": "892124978869b74935dc3934c42bfe5a"
+    },
+    "splines2": {
+      "Package": "splines2",
+      "Version": "0.5.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "RcppArmadillo",
+        "graphics",
+        "stats"
+      ],
+      "Hash": "360a704c2e685a3d51fff101e89a2863"
     },
     "survival": {
       "Package": "survival",
@@ -140,17 +180,6 @@
         "utils"
       ],
       "Hash": "fe42836742a4f065b3f3f5de81fccab9"
-    },
-    "trust": {
-      "Package": "trust",
-      "Version": "0.1-8",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "stats"
-      ],
-      "Hash": "f50614d2145ba1012b62ff75f2129d5b"
     }
   }
 }
